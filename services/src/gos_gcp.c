@@ -195,9 +195,11 @@ gos_result_t gos_gcpRegisterPhysicalDriver (gos_gcpChannelNumber_t channelNumber
 /*
  * Function: gos_gcpTransmitMessage
  */
-GOS_INLINE gos_result_t gos_gcpTransmitMessage (gos_gcpChannelNumber_t channel,
-                                                gos_gcpMessageHeader_t* pMessageHeader,
-                                                void_t* pMessagePayload)
+gos_result_t gos_gcpTransmitMessage (
+        gos_gcpChannelNumber_t  channel,
+        gos_gcpMessageHeader_t* pMessageHeader,
+        void_t*                 pMessagePayload
+        )
 {
     /*
      * Local variables.
@@ -243,9 +245,11 @@ GOS_INLINE gos_result_t gos_gcpTransmitMessage (gos_gcpChannelNumber_t channel,
 /*
  * Function: gos_gcpReceiveMessage
  */
-GOS_INLINE gos_result_t gos_gcpReceiveMessage (gos_gcpChannelNumber_t channel,
-                                               gos_gcpMessageHeader_t* pTargetMessageHeader,
-                                               void_t* pPayloadTarget)
+gos_result_t gos_gcpReceiveMessage (
+        gos_gcpChannelNumber_t  channel,
+        gos_gcpMessageHeader_t* pTargetMessageHeader,
+        void_t*                 pPayloadTarget
+        )
 {
     /*
      * Local variables.
@@ -298,9 +302,11 @@ GOS_INLINE gos_result_t gos_gcpReceiveMessage (gos_gcpChannelNumber_t channel,
  * @retval  GOS_SUCCESS   : Frame transmission successful.
  * @retval  GOS_ERROR     : Transmit function is NULL pointer or frame transmission failed.
  */
-GOS_STATIC gos_result_t gos_gcpTransmitFrames (gos_gcpChannelNumber_t channel,
-                                               u8_t* pMessageBytes,
-                                               u16_t messageSize)
+GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitFrames (
+        gos_gcpChannelNumber_t channel,
+        u8_t* pMessageBytes,
+        u16_t messageSize
+        )
 {
     /*
      * Local variables.
@@ -380,7 +386,11 @@ GOS_STATIC gos_result_t gos_gcpTransmitFrames (gos_gcpChannelNumber_t channel,
  * @retval  GOS_ERROR   : Receive function is NULL pointer, frame reception error or
  *                        invalid message CRC.
  */
-GOS_STATIC gos_result_t gos_gcpReceiveFrames (gos_gcpChannelNumber_t channel, u8_t* pTarget, u16_t targetSize)
+GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveFrames (
+        gos_gcpChannelNumber_t channel,
+        u8_t* pTarget,
+        u16_t targetSize
+        )
 {
     /*
      * Local variables.

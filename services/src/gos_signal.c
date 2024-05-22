@@ -86,8 +86,8 @@ typedef struct
  */
 typedef struct
 {
-    gos_signalId_t       signalId; //!< Signal ID.
-    gos_signalSenderId_t senderId; //!< Sender ID.
+    gos_signalId_t           signalId;                                      //!< Signal ID.
+    gos_signalSenderId_t     senderId;                                      //!< Sender ID.
 }gos_signalInvokeDescriptor;
 
 /*
@@ -148,9 +148,9 @@ gos_result_t gos_signalInit (void_t)
 
     // Register signal daemon and create kernel task delete signal.
     if (gos_taskRegister(&signalDaemonTaskDescriptor, NULL) != GOS_SUCCESS ||
-        gos_signalCreate(&kernelTaskDeleteSignal)                 != GOS_SUCCESS ||
-        gos_signalCreate(&kernelDumpReadySignal)                  != GOS_SUCCESS ||
-        gos_triggerInit(&signalInvokeTrigger)                     != GOS_SUCCESS
+        gos_signalCreate(&kernelTaskDeleteSignal)           != GOS_SUCCESS ||
+        gos_signalCreate(&kernelDumpReadySignal)            != GOS_SUCCESS ||
+        gos_triggerInit(&signalInvokeTrigger)               != GOS_SUCCESS
     )
     {
         signalInitResult = GOS_ERROR;
@@ -248,18 +248,18 @@ GOS_INLINE gos_result_t gos_signalInvoke (gos_signalId_t signalId, gos_signalSen
     /*
      * Local variables.
      */
-    gos_result_t             signalInvokeResult = GOS_ERROR;
-    gos_tid_t                callerTaskId       = GOS_INVALID_TASK_ID;
-    gos_taskDescriptor_t     callerTaskDesc     = {0};
+    gos_result_t         signalInvokeResult = GOS_ERROR;
+    gos_tid_t            callerTaskId       = GOS_INVALID_TASK_ID;
+    gos_taskDescriptor_t callerTaskDesc     = {0};
 
     /*
      * Function code.
      */
     if (signalId < CFG_SIGNAL_MAX_NUMBER && signalArray[signalId].inUse == GOS_TRUE)
     {
-        if ((gos_kernelIsCallerIsr()                           == GOS_TRUE    ||
-            (gos_taskGetCurrentId(&callerTaskId)               == GOS_SUCCESS &&
-            gos_taskGetData(callerTaskId, &callerTaskDesc)     == GOS_SUCCESS &&
+        if ((gos_kernelIsCallerIsr()                                 == GOS_TRUE    ||
+            (gos_taskGetCurrentId(&callerTaskId)                     == GOS_SUCCESS &&
+            gos_taskGetData(callerTaskId, &callerTaskDesc)           == GOS_SUCCESS &&
             (callerTaskDesc.taskPrivilegeLevel & GOS_PRIV_SIGNALING) == GOS_PRIV_SIGNALING))
             )
         {
@@ -308,7 +308,7 @@ GOS_STATIC void_t gos_signalDaemonTask (void_t)
         // Wait for trigger.
         if (gos_triggerWait(&signalInvokeTrigger, 1u, GOS_TRIGGER_ENDLESS_TMO) == GOS_SUCCESS)
         {
-            gos_triggerReset(&signalInvokeTrigger);
+            (void_t) gos_triggerReset(&signalInvokeTrigger);
             for (signalIndex = 0u; signalIndex < CFG_SIGNAL_MAX_NUMBER; signalIndex++)
             {
                 if (signalArray[signalIndex].invokeRequired == GOS_TRUE)
