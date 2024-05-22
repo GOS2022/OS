@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_sysmon.c
 //! @author     Ahmed Gazar
-//! @date       2023-09-25
-//! @version    1.3
+//! @date       2024-04-22
+//! @version    1.4
 //!
 //! @brief      GOS system monitoring service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_sysmon.h
@@ -31,6 +31,7 @@
 //                                          +    New messages introduced
 //                                          *    Component rework
 // 1.3        2024-02-13    Ahmed Gazar     +    User message handling added
+// 1.4        2024-04-22    Ahmed Gazar     *    Task modification options extended
 //*************************************************************************************************
 //
 // Copyright (c) 2023 Ahmed Gazar
@@ -158,6 +159,9 @@ typedef enum
     GOS_SYSMON_TASK_MOD_TYPE_SUSPEND = 12,               //!< Task suspend.
     GOS_SYSMON_TASK_MOD_TYPE_RESUME  = 34,               //!< Task resume.
     GOS_SYSMON_TASK_MOD_TYPE_DELETE  = 49,               //!< Task delete.
+    GOS_SYSMON_TASK_MOD_TYPE_BLOCK   = 52,               //!< Task block.
+    GOS_SYSMON_TASK_MOD_TYPE_UNBLOCK = 63,               //!< Task unblock.
+    GOS_SYSMON_TASK_MOD_TYPE_WAKEUP  = 74                //!< Task wakeup.
 }gos_sysmonTaskModifyType_t;
 
 /**
@@ -244,6 +248,7 @@ typedef struct __attribute__((packed))
 {
     u16_t                      taskIndex;                //!< Task index.
     gos_sysmonTaskModifyType_t modificationType;         //!< Task modification type.
+    u32_t                      param;                    //!< Parameter for functions where timeout is required.
 }gos_sysmonTaskModifyMessage_t;
 
 /**
@@ -984,6 +989,42 @@ GOS_STATIC void_t gos_sysmonHandleTaskModification (gos_sysmonMessageEnum_t lutI
              case GOS_SYSMON_TASK_MOD_TYPE_DELETE:
              {
                  if (gos_taskDelete(taskDesc.taskId) == GOS_SUCCESS)
+                 {
+                     taskModifyResultMessage.messageResult = GOS_SYSMON_MSG_RES_OK;
+                 }
+                 else
+                 {
+                     taskModifyResultMessage.messageResult = GOS_SYSMON_MSG_RES_ERROR;
+                 }
+                 break;
+             }
+             case GOS_SYSMON_TASK_MOD_TYPE_BLOCK:
+             {
+                 if (gos_taskBlock(taskDesc.taskId, taskModifyMessage.param) == GOS_SUCCESS)
+                 {
+                     taskModifyResultMessage.messageResult = GOS_SYSMON_MSG_RES_OK;
+                 }
+                 else
+                 {
+                     taskModifyResultMessage.messageResult = GOS_SYSMON_MSG_RES_ERROR;
+                 }
+                 break;
+             }
+             case GOS_SYSMON_TASK_MOD_TYPE_UNBLOCK:
+             {
+                 if (gos_taskUnblock(taskDesc.taskId) == GOS_SUCCESS)
+                 {
+                     taskModifyResultMessage.messageResult = GOS_SYSMON_MSG_RES_OK;
+                 }
+                 else
+                 {
+                     taskModifyResultMessage.messageResult = GOS_SYSMON_MSG_RES_ERROR;
+                 }
+                 break;
+             }
+             case GOS_SYSMON_TASK_MOD_TYPE_WAKEUP:
+             {
+                 if (gos_taskWakeup(taskDesc.taskId) == GOS_SUCCESS)
                  {
                      taskModifyResultMessage.messageResult = GOS_SYSMON_MSG_RES_OK;
                  }
