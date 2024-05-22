@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_error.c
 //! @author     Ahmed Gazar
-//! @date       2023-10-20
-//! @version    2.3
+//! @date       2024-04-24
+//! @version    2.4
 //!
 //! @brief      GOS error handler service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_error.h
@@ -33,6 +33,7 @@
 // 2.2        2023-06-30    Ahmed Gazar     *    Logo printing modified
 //                                          +    CFG_RESET_ON_ERROR check added
 // 2.3        2023-10-20    Ahmed Gazar     *    gos_printStartupLogo made weak
+// 2.4        2024-04-24    Ahmed Gazar     *    Year in startup logo changed to 2022-2024
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -118,7 +119,7 @@ __attribute__((weak)) void_t gos_printStartupLogo (void_t)
     (void_t) gos_traceTraceFormattedUnsafe("              ##       ##       ##       ##                ##             \r\n");
     (void_t) gos_traceTraceFormattedUnsafe("               #########         #########         #########              \r\n");
     (void_t) gos_traceTraceFormattedUnsafe("                 #####             #####             #####                \r\n\r\n");
-    (void_t) gos_traceTraceFormattedUnsafe("                           (c) Ahmed Gazar, 2023                          \r\n\r\n");
+    (void_t) gos_traceTraceFormattedUnsafe("                        (c) Ahmed Gazar, 2022-2024                        \r\n\r\n");
     (void_t) gos_traceTraceFormattedUnsafe("**************************************************************************\r\n");
 }
 
