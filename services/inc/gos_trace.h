@@ -106,8 +106,8 @@ gos_result_t gos_traceInit (
  * @brief   Traces a given message.
  * @details Places the given message to the trace queue (for the trace daemon to print it).
  *
- * @param   traceMessage : String to trace.
  * @param   addTimeStamp : Flag to indicate whether to add time-stamp or not.
+ * @param   traceMessage : String to trace.
  *
  * @return  Result of tracing.
  *
@@ -126,8 +126,8 @@ gos_result_t gos_traceTrace (
  * @details Prints the formatted message into a local buffer and places it
  *          to the trace queue (for the trace daemon to print it).
  *
- * @param   traceFormat  : Formatter string.
  * @param   addTimeStamp : Flag to indicate whether to add time-stamp or not.
+ * @param   traceFormat  : Formatter string.
  * @param   ...          : Optional parameters.
  *
  * @return  Result of formatted tracing.

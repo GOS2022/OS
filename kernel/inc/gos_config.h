@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_config.h
 //! @author     Ahmed Gazar
-//! @date       2023-07-12
-//! @version    1.7
+//! @date       2024-04-24
+//! @version    1.10
 //!
 //! @brief      GOS configuration header.
 //! @details    This header contains the kernel and service configurations of the operating system.
@@ -41,6 +41,7 @@
 //                                          +    CFG_SYSMON_USE_SERVICE added
 // 1.8        2023-09-25    Ahmed Gazar     *    Application specific configuration inclusion added
 // 1.9        2024-02-13    Ahmed Gazar     +    CFG_SYSMON_MAX_USER_MESSAGES added
+// 1.10       2024-04-24    Ahmed Gazar     -    Process service related definitions removed
 //*************************************************************************************************
 #ifndef GOS_CONFIG_H
 #define GOS_CONFIG_H
@@ -125,10 +126,6 @@
  */
 #define CFG_TASK_SIGNAL_DAEMON_STACK    ( 0x400 )
 /**
- * Process daemon task stack size.
- */
-#define CFG_TASK_PROC_DAEMON_STACK      ( 0x300 )
-/**
  * Time daemon task stack size.
  */
 #define CFG_TASK_TIME_DAEMON_STACK      ( 0x300 )
@@ -165,10 +162,6 @@
  */
 #define CFG_TASK_SIGNAL_DAEMON_PRIO     ( 197 )
 /**
- * Process daemon task priority.
- */
-#define CFG_TASK_PROC_DAEMON_PRIO       ( 194 )
-/**
  * Shell daemon task priority.
  */
 #define CFG_TASK_SHELL_DAEMON_PRIO      ( 192 )
@@ -184,30 +177,6 @@
  * Sysmon daemon task priority.
  */
 #define CFG_TASK_SYSMON_DAEMON_PRIO     ( 191 )
-
-/*
- * Process service parameters.
- */
-/**
- * Process service use flag.
- */
-#define CFG_PROC_USE_SERVICE            ( 0 )
-/**
- * Maximum process priority levels.
- */
-#define CFG_PROC_MAX_PRIO_LEVELS        ( UINT8_MAX )
-/**
- * Idle process priority.
- */
-#define CFG_PROC_IDLE_PRIO              ( CFG_PROC_MAX_PRIO_LEVELS )
-/**
- * Maximum process name length.
- */
-#define CFG_PROC_MAX_NAME_LENGTH        ( 24 )
-/**
- * Maximum number of processes.
- */
-#define CFG_PROC_MAX_NUMBER             ( 4 )
 
 /*
  * Queue service parameters.

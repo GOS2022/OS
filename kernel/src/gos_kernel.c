@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_kernel.c
 //! @author     Ahmed Gazar
-//! @date       2024-04-17
-//! @version    1.19
+//! @date       2024-04-24
+//! @version    1.20
 //!
 //! @brief      GOS kernel source.
 //! @details    For a more detailed description of this module, please refer to @ref gos_kernel.h
@@ -73,6 +73,7 @@
 // 1.18       2024-04-02    Ahmed Gazar     *    gos_kernelCalculateTaskCpuUsages: break from loop
 //                                               moved to the beginning of loop
 // 1.19       2024-04-17    Ahmed Gazar     *    Task block timeout check fixed
+// 1.20       2024-04-24    Ahmed Gazar     -    Process service include removed
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -99,7 +100,6 @@
 #include <gos_error.h>
 #include <gos_kernel.h>
 #include <gos_port.h>
-#include <gos_process.h>
 #include <gos_signal.h>
 #include <gos_shell_driver.h>
 #include <gos_timer_driver.h>

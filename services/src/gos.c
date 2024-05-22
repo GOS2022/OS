@@ -116,9 +116,6 @@ GOS_STATIC gos_initStruct_t initializers [] =
     {"Queue service initialization"   , gos_queueInit},
     {"Trace service initialization"   , gos_traceInit},
     {"Signal service initialization"  , gos_signalInit},
-#if CFG_PROC_USE_SERVICE == 1
-    {"Process service initialization" , gos_procInit},
-#endif
     {"Time service initialization"    , gos_timeInit},
 #if CFG_SHELL_USE_SERVICE == 1
     {"Shell service initialization"   , gos_shellInit},
@@ -345,9 +342,6 @@ GOS_STATIC void_t gos_systemTask (void_t)
         {
             (void_t) gos_taskSleep(100);
             gos_kernelDump();
-#if CFG_PROC_USE_SERVICE
-            gos_procDump();
-#endif
             gos_queueDump();
 
             // Invoke dump ready signal.
