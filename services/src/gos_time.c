@@ -63,7 +63,6 @@
  * Includes
  */
 #include <gos_time.h>
-#include <gos_error.h>
 #include <gos_signal.h>
 #include <string.h>
 
@@ -167,7 +166,7 @@ gos_result_t gos_timeInit (void_t)
     /*
      * Function code.
      */
-    if (gos_signalCreate(&timeSignalId)                                != GOS_SUCCESS ||
+    if (gos_signalCreate(&timeSignalId)                          != GOS_SUCCESS ||
         gos_taskRegister(&timeDaemonTaskDesc, &timeDaemonTaskId) != GOS_SUCCESS
         )
     {
@@ -283,12 +282,12 @@ gos_result_t gos_timeCompare (gos_time_t* pTime1, gos_time_t* pTime2, gos_timeCo
         {
             *result = GOS_TIME_EQUAL;
         }
-        else if (pTime1->hours < pTime2->hours || (
-            pTime1->hours == pTime2->hours &&
-            pTime1->minutes < pTime2->minutes) || (
-            pTime1->hours == pTime2->hours &&
-            pTime1->minutes == pTime2->minutes &&
-            pTime1->seconds < pTime2->seconds))
+        else if (pTime1->hours   <  pTime2->hours    || (
+                 pTime1->hours   == pTime2->hours    &&
+                 pTime1->minutes <  pTime2->minutes) || (
+                 pTime1->hours   == pTime2->hours    &&
+                 pTime1->minutes == pTime2->minutes  &&
+                 pTime1->seconds <  pTime2->seconds))
         {
             *result = GOS_TIME_EARLIER;
         }

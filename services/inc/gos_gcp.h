@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_gcp.h
 //! @author     Ahmed Gazar
-//! @date       2022-12-20
-//! @version    2.0
+//! @date       2024-07-18
+//! @version    3.0
 //!
 //! @brief      GOS General Communication Protocol header.
 //! @details    This service implements the GCP frame and message layers.
@@ -27,6 +27,7 @@
 // 1.0        2022-12-10    Ahmed Gazar     Initial version created
 // 1.1        2022-12-20    Ahmed Gazar     * Function description modified
 // 2.0        2022-12-20    Ahmed Gazar     Released
+// 3.0        2024-07-18    Ahmed Gazar     Service rework
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -73,17 +74,6 @@ typedef gos_result_t (*gos_gcpTransmitFunction_t) (u8_t*, u16_t);
  */
 typedef gos_result_t (*gos_gcpReceiveFunction_t) (u8_t*, u16_t);
 
-/**
- * GCP message header.
- */
-typedef struct __attribute__ ((packed))
-{
-    u16_t protocolVersion; //!< Message protocol version.
-    u16_t messageId;       //!< Message ID.
-    u16_t payloadSize;     //!< Payload size.
-    u32_t payloadCrc;      //!< Payload CRC.
-}gos_gcpMessageHeader_t;
-
 /*
  * Function prototypes
  */
@@ -121,43 +111,43 @@ gos_result_t gos_gcpRegisterPhysicalDriver (
 
 /**
  * @brief   Transmits the given message via the GCP protocol.
- * @details Calculates the payload CRC (if previously calculated in the header, it overwrites it!),
- *          transmits the header frames, and then transmits the payload frames.
+ * @details Calls the internal message transmitter function.
  *
  * @param   channel         : GCP channel.
- * @param   pMessageHeader  : Pointer to the message header describing the message parameters.
+ * @param   messageId       : Message ID.
  * @param   pMessagePayload : Pointer to the message payload.
+ * @param   payloadSize     : Size of the payload (in bytes).
  *
  * @return  Result of message transmission.
  *
  * @retval  GOS_SUCCESS     : Message transmitted successfully.
- * @retval  GOS_ERROR       : Message header, message payload or transmit function is NULL pointer or
- *                            frame transmission error occurred.
+ * @retval  GOS_ERROR       : An error occurred during transmission or validation.
  */
 gos_result_t gos_gcpTransmitMessage (
         gos_gcpChannelNumber_t  channel,
-        gos_gcpMessageHeader_t* pMessageHeader,
-        void_t*                 pMessagePayload
+        u16_t                   messageId,
+        void_t*                 pMessagePayload,
+        u16_t                   payloadSize
         );
 
 /**
  * @brief   Receives the given message via the GCP protocol.
- * @details Receives the header frames and based on that, it receives the payload frames. Finally,
- *          it checks the payload CRC.
+ * @details Calls the internal receiver function.
  *
- * @param   channel              : GCP channel.
- * @param   pTargetMessageHeader : Pointer to the message header describing the message parameters.
- * @param   pPayloadTarget       : Pointer to the payload target buffer.
+ * @param   channel        : GCP channel.
+ * @param   pMessageId     : Pointer to a variable to store the message ID.
+ * @param   pPayloadTarget : Pointer to the payload target buffer.
+ * @param   targetSize     : Size of the target buffer (in bytes).
  *
  * @return  Result of message reception.
  *
- * @retval  GOS_SUCCESS          : Message received successfully.
- * @retval  GOS_ERROR            : Message header target, payload target or receive function is NULL pointer or
- *                                 frame reception error occurred.
+ * @retval  GOS_SUCCESS    : Message received successfully.
+ * @retval  GOS_ERROR      : An error occurred during reception or validation.
  */
 gos_result_t gos_gcpReceiveMessage (
         gos_gcpChannelNumber_t  channel,
-        gos_gcpMessageHeader_t* pTargetMessageHeader,
-        void_t*                 pPayloadTarget
+        u16_t*                  pMessageId,
+        void_t*                 pPayloadTarget,
+        u16_t                   targetSize
         );
 #endif

@@ -58,7 +58,6 @@
  * Includes
  */
 #include <gos_error.h>
-#include <gos_timer_driver.h>
 #include <stdio.h>
 
 /*

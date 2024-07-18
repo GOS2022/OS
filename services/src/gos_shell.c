@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_shell.c
 //! @author     Ahmed Gazar
-//! @date       2023-09-08
-//! @version    1.8
+//! @date       2024-06-28
+//! @version    1.9
 //!
 //! @brief      GOS shell service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_shell.h
@@ -37,6 +37,7 @@
 // 1.7        2023-07-12    Ahmed Gazar     +    Command handler privilege-handling added
 // 1.8        2023-09-08    Ahmed Gazar     +    Shell help: list of shell commands added
 //                                          +    Shell CPU and runtime commands added
+// 1.9        2024-06-28    Ahmed Gazar     +    Task unblock commands added
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -63,7 +64,6 @@
 #include <gos.h>
 #include <gos_shell.h>
 #include <gos_shell_driver.h>
-#include <gos_trace.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -75,6 +75,11 @@
  * Shell daemon poll time [ms].
  */
 #define GOS_SHELL_DAEMON_POLL_TIME_MS    ( 50u )
+
+/**
+ * Shell display text.
+ */
+#define GOS_SHELL_DISPLAY_TEXT           ("[\x1B[1m\x1B[33mgos shell\x1B[0m]>> ")
 
 /*
  * Static variables
@@ -353,6 +358,8 @@ GOS_STATIC void_t gos_shellDaemonTask (void_t)
     /*
      * Function code.
      */
+    (void_t) gos_shellDriverTransmitString(GOS_SHELL_DISPLAY_TEXT);
+
     for (;;)
     {
         if (gos_shellDriverReceiveChar(&commandBuffer[commandBufferIndex]) == GOS_SUCCESS)
@@ -442,6 +449,8 @@ GOS_STATIC void_t gos_shellDaemonTask (void_t)
 
                 (void_t) memset((void_t*)commandBuffer, '\0', CFG_SHELL_COMMAND_BUFFER_SIZE);
                 commandBufferIndex = 0u;
+
+                (void_t) gos_shellDriverTransmitString(GOS_SHELL_DISPLAY_TEXT);
             }
             else
             {
@@ -507,9 +516,11 @@ GOS_STATIC void_t gos_shellCommandHandler (char_t* params)
                         "- delete_tid\r\n\t\t"
                         "- suspend_tid\r\n\t\t"
                         "- resume_tid\r\n\t\t"
+                		"- unblock_tid\r\n\t\t"
                         "- delete\r\n\t\t"
                         "- suspend\r\n\t\t"
                         "- resume\r\n\t\t"
+                		"- unblock\r\n\t\t"
                         "- runtime\r\n\t\t"
                         "- cpu\r\n");
             }
@@ -614,6 +625,37 @@ GOS_STATIC void_t gos_shellCommandHandler (char_t* params)
                 else
                 {
                     (void_t) gos_shellDriverTransmitString("%s could not be resumed.\r\n", &params[index]);
+                }
+            }
+            else
+            {
+                (void_t) gos_shellDriverTransmitString("Task could not be found.\r\n");
+            }
+        }
+        else if (strcmp(params, "unblock_tid") == 0)
+        {
+            taskId = (gos_tid_t)strtol(&params[++index], NULL, 16);
+
+            if (gos_taskUnblock(taskId) == GOS_SUCCESS)
+            {
+                (void_t) gos_shellDriverTransmitString("0x%X task has been unblocked.\r\n", taskId);
+            }
+            else
+            {
+                (void_t) gos_shellDriverTransmitString("0x%X task could not be unblocked.\r\n", taskId);
+            }
+        }
+        else if (strcmp(params, "unblock") == 0)
+        {
+            if (gos_taskGetId(&params[++index], &taskId) == GOS_SUCCESS)
+            {
+                if (gos_taskUnblock(taskId) == GOS_SUCCESS)
+                {
+                    (void_t) gos_shellDriverTransmitString("%s has been unblocked.\r\n", &params[index]);
+                }
+                else
+                {
+                    (void_t) gos_shellDriverTransmitString("%s could not be unblocked.\r\n", &params[index]);
                 }
             }
             else

@@ -75,6 +75,10 @@ gos_result_t gos_timerDriverSysTimerGet (u16_t* pValue)
     {
         timerDriverSysTimerGetResult = driverFunctions.timerDriverSysTimerGetValue(pValue);
     }
+    else
+    {
+        // Nothing to do.
+    }
 
     return timerDriverSysTimerGetResult;
 }

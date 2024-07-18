@@ -129,14 +129,14 @@ gos_result_t gos_mutexLock (gos_mutex_t* pMutex, u32_t timeout)
             // Restore priority if it was changed.
             if (prioChanged == GOS_TRUE)
             {
-            	// ISR enter to avoid privilege issues.
-            	GOS_ISR_ENTER
-            	(void_t) gos_taskSetPriority(ownerId, ownerPrio);
-            	GOS_ISR_EXIT
+                // ISR enter to avoid privilege issues.
+                GOS_ISR_ENTER
+                (void_t) gos_taskSetPriority(ownerId, ownerPrio);
+                GOS_ISR_EXIT
             }
             else
             {
-            	// Priority was not changed.
+                // Priority was not changed.
             }
 #endif
             pMutex->mutexState = GOS_MUTEX_LOCKED;
@@ -149,28 +149,28 @@ gos_result_t gos_mutexLock (gos_mutex_t* pMutex, u32_t timeout)
             // Mutex is locked.
 
 #if CFG_USE_PRIO_INHERITANCE
-        	// Check priority.
-        	(void_t) gos_taskGetPriority(pMutex->owner, &ownerPrio);
-        	(void_t) gos_taskGetCurrentId(&currentId);
-        	(void_t) gos_taskGetPriority(currentId, &currentPrio);
-        	ownerId = pMutex->owner;
+            // Check priority.
+            (void_t) gos_taskGetPriority(pMutex->owner, &ownerPrio);
+            (void_t) gos_taskGetCurrentId(&currentId);
+            (void_t) gos_taskGetPriority(currentId, &currentPrio);
+            ownerId = pMutex->owner;
 
-        	// If the current task has a higher priority,
-        	// then modify the owner priority.
-        	if (currentPrio < ownerPrio)
-        	{
-        		// Add temporary priority.
-        		// ISR enter to avoid privilege issues.
-        		GOS_ISR_ENTER
-        		(void_t) gos_taskSetPriority(pMutex->owner, currentPrio);
-        		GOS_ISR_EXIT
+            // If the current task has a higher priority,
+            // then modify the owner priority.
+            if (currentPrio < ownerPrio)
+            {
+                // Add temporary priority.
+                // ISR enter to avoid privilege issues.
+                GOS_ISR_ENTER
+                (void_t) gos_taskSetPriority(pMutex->owner, currentPrio);
+                GOS_ISR_EXIT
 
-				prioChanged = GOS_TRUE;
-        	}
-        	else
-        	{
-        		// There is no priority inversion.
-        	}
+                prioChanged = GOS_TRUE;
+            }
+            else
+            {
+                // There is no priority inversion.
+            }
 #endif
         }
 

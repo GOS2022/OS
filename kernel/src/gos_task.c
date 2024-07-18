@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_task.c
 //! @author     Ahmed Gazar
-//! @date       2024-04-19
-//! @version    1.1
+//! @date       2024-06-13
+//! @version    1.2
 //!
 //! @brief      GOS task source.
 //! @details    For a more detailed description of this module, please refer to @ref gos_kernel.h
@@ -26,6 +26,7 @@
 // ------------------------------------------------------------------------------------------------
 // 1.0        2023-11-06    Ahmed Gazar     Initial version created.
 // 1.1        2024-04-19    Ahmed Gazar     *    Task register task CPU limit range check fixed
+// 1.2        2024-06-13    Ahmed Gazar     +    gos_taskGetNumber added
 //*************************************************************************************************
 //
 // Copyright (c) 2023 Ahmed Gazar
@@ -237,7 +238,7 @@ gos_result_t gos_taskRegister (gos_taskDescriptor_t* taskDescriptor, gos_tid_t* 
             }
             else if (taskDescriptor->taskCpuUsageLimit > 10000u)
             {
-            	taskDescriptors[taskIndex].taskCpuUsageLimit = 10000u;
+                taskDescriptors[taskIndex].taskCpuUsageLimit = 10000u;
             }
             else
             {
@@ -540,12 +541,12 @@ GOS_INLINE gos_result_t gos_taskBlock (gos_tid_t taskId, gos_blockMaxTick_t bloc
                 }
                 else
                 {
-                	// Nothing to do.
+                    // Nothing to do.
                 }
             }
             else
             {
-            	// Nothing to do.
+                // Nothing to do.
             }
         }
         else
@@ -1157,6 +1158,49 @@ gos_result_t gos_taskGetDataByIndex (u16_t taskIndex, gos_taskDescriptor_t* task
     GOS_ATOMIC_EXIT
 
     return taskGetDataResult;
+}
+
+/*
+ * Function: gos_taskGetNumber
+ */
+gos_result_t gos_taskGetNumber (u16_t* pTaskNum)
+{
+    /*
+     * Local variables.
+     */
+    gos_result_t taskGetNumResult = GOS_ERROR;
+    u16_t        taskIndex        = 0u;
+
+    /*
+     * Function code.
+     */
+    if (pTaskNum != NULL)
+    {
+        // Initialize variable.
+        *pTaskNum = 0u;
+
+        for (taskIndex = 0u; taskIndex < CFG_TASK_MAX_NUMBER; taskIndex++)
+        {
+            if (taskDescriptors[taskIndex].taskFunction != NULL)
+            {
+                // Increase counter.
+                (*pTaskNum)++;
+            }
+            else
+            {
+                // Last task found.
+                break;
+            }
+        }
+
+        taskGetNumResult = GOS_SUCCESS;
+    }
+    else
+    {
+        // NULL pointer.
+    }
+
+    return taskGetNumResult;
 }
 
 /*

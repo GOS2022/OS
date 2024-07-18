@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_kernel.h
 //! @author     Ahmed Gazar
-//! @date       2024-02-27
-//! @version    1.20
+//! @date       2024-06-13
+//! @version    1.21
 //!
 //! @brief      GOS kernel header.
 //! @details    The GOS kernel is the core of the GOS system. It contains the basic type
@@ -82,6 +82,7 @@
 //                                          *    gos_kernel_privilege_t moved here
 //                                          -    taskIdEx removed from task descriptor structure
 // 1.20       2024-02-27    Ahmed Gazar     +    GOS_CONCAT_RESULT added
+// 1.21       2024-06-13    Ahmed Gazar     +    gos_taskGetNumber added
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -902,6 +903,22 @@ gos_result_t gos_taskGetData (
 gos_result_t gos_taskGetDataByIndex (
         u16_t                 taskIndex,
         gos_taskDescriptor_t* taskData
+        );
+
+/**
+ * @brief   Returns the number of registered tasks.
+ * @details Loops through the internal task array and counts the
+ *          entries where a task function is registered.
+ *
+ * @param   pTaskNum : Variable to store the number of tasks.
+ *
+ * @return  Success of task number counting.
+ *
+ * @retval  GOS_SUCCESS : Task number counted successfully.
+ * @retval  GOS_ERROR   : Target variable is NULL pointer.
+ */
+gos_result_t gos_taskGetNumber (
+        u16_t* pTaskNum
         );
 
 /**

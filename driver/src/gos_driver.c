@@ -72,8 +72,12 @@ gos_result_t gos_driverInit (gos_driver_functions_t* pDriverFunctions)
      */
     if (pDriverFunctions != NULL)
     {
-        memcpy((void_t*)&driverFunctions, (void_t*)pDriverFunctions, sizeof(gos_driver_functions_t));
+        (void_t) memcpy((void_t*)&driverFunctions, (void_t*)pDriverFunctions, sizeof(gos_driver_functions_t));
         driverInitResult = GOS_SUCCESS;
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return driverInitResult;

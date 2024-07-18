@@ -86,6 +86,10 @@ gos_result_t gos_shellDriverReceiveChar (char_t* pChar)
     {
         shellDriverReceiveResult = driverFunctions.shellDriverReceiveChar(pChar);
     }
+    else
+    {
+        // Nothing to do.
+    }
 
     return shellDriverReceiveResult;
 }
@@ -111,6 +115,10 @@ gos_result_t gos_shellDriverTransmitString (char_t* pString, ...)
     if (driverFunctions.shellDriverTransmitString != NULL)
     {
         shellDriverTransmitResult = driverFunctions.shellDriverTransmitString(formattedBuffer);
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return shellDriverTransmitResult;

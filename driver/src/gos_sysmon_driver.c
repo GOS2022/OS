@@ -74,6 +74,10 @@ gos_result_t gos_sysmonDriverReceive (u8_t* pBuffer, u16_t bufferSize)
     {
         sysmonDriverReceiveResult = driverFunctions.sysmonDriverReceive(pBuffer, bufferSize);
     }
+    else
+    {
+        // Nothing to do.
+    }
 
     return sysmonDriverReceiveResult;
 }
@@ -94,6 +98,10 @@ gos_result_t gos_sysmonDriverTransmit (u8_t* pBuffer, u16_t bufferSize)
     if (driverFunctions.sysmonDriverTransmit != NULL)
     {
         sysmonDriverTransmitResult = driverFunctions.sysmonDriverTransmit(pBuffer, bufferSize);
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return sysmonDriverTransmitResult;

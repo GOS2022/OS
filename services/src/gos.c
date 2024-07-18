@@ -228,6 +228,8 @@ void_t gos_Dump (void_t)
     {
         gos_taskWakeup(systemTaskId);
     }
+
+    (void_t) gos_shellSuspend();
 }
 
 /*
@@ -347,6 +349,7 @@ GOS_STATIC void_t gos_systemTask (void_t)
             // Invoke dump ready signal.
             (void_t) gos_signalInvoke(kernelDumpReadySignal, 0u);
             dumpRequired = GOS_FALSE;
+            (void_t) gos_shellResume();
         }
         else
         {

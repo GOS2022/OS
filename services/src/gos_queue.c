@@ -63,11 +63,8 @@
  * Includes
  */
 #include <gos_queue.h>
-#include <gos_error.h>
 #include <gos_mutex.h>
-#include <gos_signal.h>
 #include <gos_shell_driver.h>
-#include <gos_trace.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -205,6 +202,10 @@ gos_result_t gos_queueCreate (gos_queueDescriptor_t* pQueueDescriptor)
                     strlen(pQueueDescriptor->queueName) <= CFG_QUEUE_MAX_NAME_LENGTH)
                 {
                     (void_t) strcpy(queues[queueIndex].queueName, pQueueDescriptor->queueName);
+                }
+                else
+                {
+                    // Nothing to do.
                 }
 #endif
                 queueCreateResult = GOS_SUCCESS;

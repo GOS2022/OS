@@ -103,7 +103,6 @@
 #include <gos_signal.h>
 #include <gos_shell_driver.h>
 #include <gos_timer_driver.h>
-#include <gos_trace.h>
 #include <stdio.h>
 #include <string.h>
 

@@ -76,6 +76,10 @@ gos_result_t gos_traceDriverTransmitString (char_t* pString)
     {
         traceDriverTransmitResult = driverFunctions.traceDriverTransmitString(pString);
     }
+    else
+    {
+        // Nothing to do.
+    }
 
     return traceDriverTransmitResult;
 }
@@ -96,6 +100,10 @@ gos_result_t gos_traceDriverTransmitString_Unsafe (char_t* pString)
     if (driverFunctions.traceDriverTransmitStringUnsafe != NULL)
     {
         traceDriverTransmitResult = driverFunctions.traceDriverTransmitStringUnsafe(pString);
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return traceDriverTransmitResult;

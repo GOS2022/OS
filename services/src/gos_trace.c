@@ -64,7 +64,6 @@
  * Includes
  */
 #include <gos_trace.h>
-#include <gos_error.h>
 #include <gos_mutex.h>
 #include <gos_queue.h>
 #include <gos_time.h>

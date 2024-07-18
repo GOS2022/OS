@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_sysmon.c
 //! @author     Ahmed Gazar
-//! @date       2024-04-22
-//! @version    1.4
+//! @date       2024-07-18
+//! @version    1.5
 //!
 //! @brief      GOS system monitoring service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_sysmon.h
@@ -32,6 +32,8 @@
 //                                          *    Component rework
 // 1.3        2024-02-13    Ahmed Gazar     +    User message handling added
 // 1.4        2024-04-22    Ahmed Gazar     *    Task modification options extended
+// 1.5        2024-07-18    Ahmed Gazar     *    GCP update
+//                                          *    Get all task data loop bug fixed
 //*************************************************************************************************
 //
 // Copyright (c) 2023 Ahmed Gazar
@@ -310,16 +312,6 @@ typedef struct
 GOS_STATIC u8_t receiveBuffer [RECEIVE_BUFFER_SIZE];
 
 /**
- * GCP received message header.
- */
-GOS_STATIC gos_gcpMessageHeader_t                 receiveMessageHeader       = {0};
-
-/**
- * GCP transmit message header.
- */
-GOS_STATIC gos_gcpMessageHeader_t                 transmitMessageHeader      = {0};
-
-/**
  * Ping message structure.
  */
 GOS_STATIC gos_sysmonPingMessage_t                pingMessage                = {0};
@@ -563,6 +555,10 @@ gos_result_t gos_sysmonInit (void_t)
     {
         sysmonInitResult = GOS_SUCCESS;
     }
+    else
+    {
+        // Initialization failed.
+    }
 
     return sysmonInitResult;
 }
@@ -586,18 +582,18 @@ gos_result_t gos_sysmonRegisterUserMessage (gos_sysmonUserMessageDescriptor_t* p
         for (userMessageIndex = 0u; userMessageIndex < CFG_SYSMON_MAX_USER_MESSAGES; userMessageIndex++)
         {
             if (userMessages[userMessageIndex].messageId == 0u &&
-            	userMessages[userMessageIndex].callback == NULL)
+                userMessages[userMessageIndex].callback == NULL)
             {
-            	// Store user message descriptor.
-            	(void_t) memcpy((void_t*)&userMessages[userMessageIndex], (void_t*)pDesc, sizeof(*pDesc));
-            	registerResult = GOS_SUCCESS;
-            	break;
+                // Store user message descriptor.
+                (void_t) memcpy((void_t*)&userMessages[userMessageIndex], (void_t*)pDesc, sizeof(*pDesc));
+                registerResult = GOS_SUCCESS;
+                break;
             }
         }
     }
     else
     {
-    	// Error.
+        // Error.
     }
 
     return registerResult;
@@ -616,45 +612,47 @@ GOS_STATIC void_t gos_sysmonDaemonTask (void_t)
      */
     gos_sysmonMessageEnum_t lutIndex         = 0u;
     u8_t                    userMessageIndex = 0u;
+    u16_t                   messageId        = 0u;
 
     /*
      * Function code.
      */
     for (;;)
     {
+        // Reset message ID.
+        messageId = 0u;
+
         // Check if a message was received.
-        if (gos_gcpReceiveMessage(CFG_SYSMON_GCP_CHANNEL_NUM, &receiveMessageHeader, receiveBuffer) == GOS_SUCCESS)
+        if (gos_gcpReceiveMessage(CFG_SYSMON_GCP_CHANNEL_NUM, &messageId, receiveBuffer, RECEIVE_BUFFER_SIZE) == GOS_SUCCESS)
         {
             // Get LUT index.
-            lutIndex = gos_sysmonGetLutIndex(receiveMessageHeader.messageId);
+            lutIndex = gos_sysmonGetLutIndex(messageId);
 
             // Check user registered messages.
             if (lutIndex == GOS_SYSMON_MSG_UNKNOWN || lutIndex == GOS_SYSMON_MSG_NUM_OF_MESSAGES)
             {
-            	for (userMessageIndex = 0u; userMessageIndex < CFG_SYSMON_MAX_USER_MESSAGES; userMessageIndex++)
-            	{
-            		if (userMessages[userMessageIndex].messageId == receiveMessageHeader.messageId &&
-            			userMessages[userMessageIndex].protocolVersion == receiveMessageHeader.protocolVersion &&
-						gos_crcDriverGetCrc(receiveBuffer, receiveMessageHeader.payloadSize) == receiveMessageHeader.payloadCrc)
-            		{
-            			// If payload is not NULL, copy it.
-            			if (userMessages[userMessageIndex].payload != NULL)
-            			{
-            				(void_t) memcpy(userMessages[userMessageIndex].payload, (void_t*)receiveBuffer, userMessages[userMessageIndex].payloadSize);
-            			}
-            			else
-            			{
-            				// Message has no payload.
-            			}
+                for (userMessageIndex = 0u; userMessageIndex < CFG_SYSMON_MAX_USER_MESSAGES; userMessageIndex++)
+                {
+                    if (userMessages[userMessageIndex].messageId == messageId)
+                    {
+                        // If payload is not NULL, copy it.
+                        if (userMessages[userMessageIndex].payload != NULL)
+                        {
+                            (void_t) memcpy(userMessages[userMessageIndex].payload, (void_t*)receiveBuffer, userMessages[userMessageIndex].payloadSize);
+                        }
+                        else
+                        {
+                            // Message has no payload.
+                        }
 
-            			// Call callback function.
-            			userMessages[userMessageIndex].callback();
-            		}
-            		else
-            		{
-            			// Message error.
-            		}
-            	}
+                        // Call callback function.
+                        userMessages[userMessageIndex].callback();
+                    }
+                    else
+                    {
+                        // Message error.
+                    }
+                }
             }
             else
             {
@@ -670,8 +668,8 @@ GOS_STATIC void_t gos_sysmonDaemonTask (void_t)
         }
         else
         {
-            // Reception error. TODO
-        	(void_t) gos_taskSleep(10);
+            // Reception error.
+            (void_t) gos_taskSleep(10);
         }
     }
 }
@@ -723,11 +721,10 @@ GOS_STATIC void_t gos_sysmonSendResponse (gos_sysmonMessageEnum_t lutIndex)
     /*
      * Function code.
      */
-    transmitMessageHeader.messageId       = sysmonLut[lutIndex].messageId;
-    transmitMessageHeader.payloadSize     = sysmonLut[lutIndex].payloadSize;
-    transmitMessageHeader.protocolVersion = sysmonLut[lutIndex].messagePv;
-
-    (void_t) gos_gcpTransmitMessage(CFG_SYSMON_GCP_CHANNEL_NUM, &transmitMessageHeader, sysmonLut[lutIndex].pMessagePayload);
+    (void_t) gos_gcpTransmitMessage(
+            CFG_SYSMON_GCP_CHANNEL_NUM,          sysmonLut[lutIndex].messageId,
+            sysmonLut[lutIndex].pMessagePayload, sysmonLut[lutIndex].payloadSize
+            );
 }
 
 /**
@@ -787,7 +784,8 @@ GOS_STATIC void_t gos_sysmonHandleTaskDataGet (gos_sysmonMessageEnum_t lutIndex)
     /*
      * Local variables.
      */
-    u16_t taskIndex = 0u;
+    u16_t  taskIndex = 0u;
+    bool_t breakLoop = GOS_FALSE;
 
     /*
      * Function code.
@@ -802,6 +800,15 @@ GOS_STATIC void_t gos_sysmonHandleTaskDataGet (gos_sysmonMessageEnum_t lutIndex)
             // Send all task data.
             for (taskIndex = 0; taskIndex < CFG_TASK_MAX_NUMBER; taskIndex++)
             {
+                if (breakLoop == GOS_TRUE)
+                {
+                    break;
+                }
+                else
+                {
+                    // Nothing to do, continue.
+                }
+
                 (void_t) gos_taskGetDataByIndex(taskIndex, &taskDesc);
 
                 if (taskDesc.taskId != GOS_INVALID_TASK_ID)
@@ -827,6 +834,7 @@ GOS_STATIC void_t gos_sysmonHandleTaskDataGet (gos_sysmonMessageEnum_t lutIndex)
                 {
                     // Last task found.
                     taskDataMsg.messageResult = GOS_SYSMON_MSG_RES_ERROR;
+                    breakLoop = GOS_TRUE;
                 }
 
                 gos_sysmonSendResponse(lutIndex + 1);
@@ -875,7 +883,8 @@ GOS_STATIC void_t gos_sysmonHandleTaskVariableDataGet (gos_sysmonMessageEnum_t l
     /*
      * Local variables.
      */
-    u16_t taskIndex = 0u;
+    u16_t  taskIndex = 0u;
+    bool_t breakLoop = GOS_FALSE;
 
     /*
      * Function code.
@@ -890,6 +899,15 @@ GOS_STATIC void_t gos_sysmonHandleTaskVariableDataGet (gos_sysmonMessageEnum_t l
             // Send all task data.
             for (taskIndex = 0; taskIndex < CFG_TASK_MAX_NUMBER; taskIndex++)
             {
+                if (breakLoop == GOS_TRUE)
+                {
+                    break;
+                }
+                else
+                {
+                    // Nothing to do, continue.
+                }
+
                 (void_t) gos_taskGetDataByIndex(taskIndex, &taskDesc);
 
                 if (taskDesc.taskId != GOS_INVALID_TASK_ID)
@@ -910,6 +928,7 @@ GOS_STATIC void_t gos_sysmonHandleTaskVariableDataGet (gos_sysmonMessageEnum_t l
                 {
                     // Last task found.
                     taskVariableDataMsg.messageResult = GOS_SYSMON_MSG_RES_ERROR;
+                    breakLoop = GOS_TRUE;
                 }
 
                 gos_sysmonSendResponse(lutIndex + 1);
@@ -1156,36 +1175,19 @@ GOS_STATIC gos_sysmonMessageResult_t gos_sysmonCheckMessage (gos_sysmonMessageEn
     /*
      * Local variables.
      */
-    gos_sysmonMessageResult_t result = GOS_SYSMON_MSG_RES_ERROR;
+    gos_sysmonMessageResult_t result = GOS_SYSMON_MSG_RES_OK;
 
     /*
      * Function code.
      */
-    if (receiveMessageHeader.protocolVersion == sysmonLut[lutIndex].messagePv)
+    // Check if there is a payload to be copied.
+    if (sysmonLut[lutIndex].pMessagePayload != NULL)
     {
-        if (sysmonLut[lutIndex].pMessagePayload != NULL && receiveMessageHeader.payloadSize > 0)
-        {
-            (void_t) memcpy(sysmonLut[lutIndex].pMessagePayload, (void_t*)receiveBuffer, receiveMessageHeader.payloadSize);
-
-            if (receiveMessageHeader.payloadCrc == gos_crcDriverGetCrc((u8_t*)sysmonLut[lutIndex].pMessagePayload, receiveMessageHeader.payloadSize))
-            {
-                // Payload CRC is OK.
-                result = GOS_SYSMON_MSG_RES_OK;
-            }
-            else
-            {
-                result = GOS_SYSMON_MSG_INV_PAYLOAD_CRC;
-            }
-        }
-        else
-        {
-            // There is no payload, PV is correct.
-            result = GOS_SYSMON_MSG_RES_OK;
-        }
+        (void_t) memcpy(sysmonLut[lutIndex].pMessagePayload, (void_t*)receiveBuffer, sysmonLut[lutIndex].payloadSize);
     }
     else
     {
-        result = GOS_SYSMON_MSG_INV_PV;
+        // Nothing to do.
     }
 
     return result;

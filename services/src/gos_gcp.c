@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_gcp.c
 //! @author     Ahmed Gazar
-//! @date       2023-09-14
-//! @version    2.4
+//! @date       2024-07-18
+//! @version    3.0
 //!
 //! @brief      GOS General Communication Protocol handler service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_gcp.h
@@ -33,6 +33,7 @@
 // 2.3        2023-07-25    Ahmed Gazar     *    TX and RX mutexes separated and added for each
 //                                               channel
 // 2.4        2023-09-14    Ahmed Gazar     +    Mutex initialization result processing added
+// 3.0        2024-07-18    Ahmed Gazar     Service rework
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -57,7 +58,6 @@
  * Includes
  */
 #include <gos_crc_driver.h>
-#include <gos_error.h>
 #include <gos_gcp.h>
 #include <gos_mutex.h>
 #include <string.h>
@@ -66,40 +66,46 @@
  * Macros
  */
 /**
- * Message frame size (bytes).
+ * GCP protocol version high byte.
  */
-#define FRAME_SIZE                  ( 64u )
+#define GCP_PROTOCOL_VERSION_MAJOR    ( 2 )
 
 /**
- * Frame protocol version high byte.
+ * GCP protocol version low byte.
  */
-#define FRAME_PROTOCOL_VERSION_H    ( 1 )
-
-/**
- * Frame protocol version low byte.
- */
-#define FRAME_PROTOCOL_VERSION_L    ( 0 )
-
-/**
- * Frame protocol version.
- */
-#define FRAME_PROTOCOL_VERSION      ( ( FRAME_PROTOCOL_VERSION_H << 8 ) + FRAME_PROTOCOL_VERSION_L )
+#define GCP_PROTOCOL_VERSION_MINOR    ( 0 )
 
 /*
  * Type definitions
  */
 /**
+ * GCP acknowledge type.
+ */
+typedef enum
+{
+    GCP_ACK_REQ           = 0, //!< Request.
+    GCP_ACK_OK            = 1, //!< OK.
+    GCP_ACK_CRC_ERROR     = 2, //!< CRC error.
+    GCP_ACK_RESEND        = 3, //!< Re-send request.
+    GCP_ACK_SIZE_ERROR    = 4, //!< Size error.
+    GCP_ACK_PV_ERROR      = 5, //!< Protocol version error.
+    GCP_ACK_INVALID       = 6, //!< Invalid message.
+}gos_gcpAck_t;
+
+/**
  * GCP frame header type.
  */
 typedef struct
 {
-    u16_t protocolVersion; //!< Protocol version.
-    u16_t sessionId;       //!< Session ID.
+    u8_t  protocolMajor;   //!< Protocol version major.
+    u8_t  protocolMinor;   //!< Protocol version minor.
+    u8_t  ackType;         //!< Acknowledge type.
+    u8_t  dummy;           //!< Dummy byte (padding).
+    u16_t messageId;       //!< Message ID.
     u16_t dataSize;        //!< Data size.
-    u16_t frameSize;       //!< Frame size.
     u32_t dataCrc;         //!< Data CRC.
     u32_t headerCrc;       //!< Header CRC.
-}gos_gcpFrameHeader_t;
+}gos_gcpHeaderFrame_t;
 
 /**
  * GCP channel functions type.
@@ -108,7 +114,6 @@ typedef struct
 {
     gos_gcpTransmitFunction_t gcpTransmitFunction; //!< GCP transmit function.
     gos_gcpReceiveFunction_t  gcpReceiveFunction;  //!< GCP receive function.
-    u16_t                     gcpSessionCounter;   //!< GCP session counter.
 }gos_gcpChannelFunctions_t;
 
 /*
@@ -132,8 +137,30 @@ GOS_STATIC gos_mutex_t gcpTxMutexes [CFG_GCP_CHANNELS_MAX_NUMBER];
 /*
  * Function prototypes
  */
-GOS_STATIC gos_result_t gos_gcpTransmitFrames (gos_gcpChannelNumber_t channel, u8_t* pMessageBytes, u16_t messageSize);
-GOS_STATIC gos_result_t gos_gcpReceiveFrames  (gos_gcpChannelNumber_t channel, u8_t* pTarget, u16_t targetSize);
+GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitMessageInternal (
+        gos_gcpChannelNumber_t  channel,
+        u16_t                   messageId,
+        void_t*                 pMessagePayload,
+        u16_t                   payloadSize
+        );
+
+GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveMessageInternal (
+        gos_gcpChannelNumber_t  channel,
+        u16_t*                  pMessageId,
+        void_t*                 pPayloadTarget,
+        u16_t                   targetSize
+        );
+
+GOS_STATIC gos_result_t gos_gcpValidateHeader (
+        gos_gcpHeaderFrame_t*   pHeader,
+        gos_gcpAck_t*           pAck
+        );
+
+GOS_STATIC gos_result_t gos_gcpValidateData (
+        gos_gcpHeaderFrame_t*   pHeader,
+        void_t*                 pData,
+        gos_gcpAck_t*           pAck
+        );
 
 /*
  * Function: gos_gcpInit
@@ -159,6 +186,10 @@ gos_result_t gos_gcpInit (void_t)
     {
         gcpInitResult = GOS_ERROR;
     }
+    else
+    {
+        // Nothing to do.
+    }
 
     return gcpInitResult;
 }
@@ -166,9 +197,11 @@ gos_result_t gos_gcpInit (void_t)
 /*
  * Function: gos_gcpRegisterPhysicalDriver
  */
-gos_result_t gos_gcpRegisterPhysicalDriver (gos_gcpChannelNumber_t channelNumber,
-                                            gos_gcpTransmitFunction_t transmitFunction,
-                                            gos_gcpReceiveFunction_t receiveFunction)
+gos_result_t gos_gcpRegisterPhysicalDriver (
+        gos_gcpChannelNumber_t    channelNumber,
+        gos_gcpTransmitFunction_t transmitFunction,
+        gos_gcpReceiveFunction_t  receiveFunction
+        )
 {
     /*
      * Local variables.
@@ -197,8 +230,9 @@ gos_result_t gos_gcpRegisterPhysicalDriver (gos_gcpChannelNumber_t channelNumber
  */
 gos_result_t gos_gcpTransmitMessage (
         gos_gcpChannelNumber_t  channel,
-        gos_gcpMessageHeader_t* pMessageHeader,
-        void_t*                 pMessagePayload
+        u16_t                   messageId,
+        void_t*                 pMessagePayload,
+        u16_t                   payloadSize
         )
 {
     /*
@@ -209,35 +243,16 @@ gos_result_t gos_gcpTransmitMessage (
     /*
      * Function code.
      */
-    if (gos_mutexLock(&gcpTxMutexes[channel], GOS_MUTEX_ENDLESS_TMO) == GOS_SUCCESS    &&
-        pMessageHeader                                  != NULL                        &&
-        (pMessagePayload                                != NULL                        ||
-        (pMessagePayload                                == NULL                        &&
-        pMessageHeader->payloadSize                     == 0u))                        &&
-        channel                                         <  CFG_GCP_CHANNELS_MAX_NUMBER &&
-        channelFunctions[channel].gcpTransmitFunction   != NULL)
+    if (gos_mutexLock(&gcpTxMutexes[channel], GOS_MUTEX_ENDLESS_TMO) == GOS_SUCCESS)
     {
-        // Calculate payload CRC.
-        pMessageHeader->payloadCrc = gos_crcDriverGetCrc((u8_t*)pMessagePayload, pMessageHeader->payloadSize);
-
-        // Transmit message header and payload.
-        if (gos_gcpTransmitFrames(channel, (u8_t*)pMessageHeader, (u16_t)sizeof(*pMessageHeader)) == GOS_SUCCESS &&
-            gos_gcpTransmitFrames(channel, (u8_t*)pMessagePayload, pMessageHeader->payloadSize)   == GOS_SUCCESS
-            )
-        {
-            transmitMessageResult = GOS_SUCCESS;
-        }
-        else
-        {
-            // Nothing to do.
-        }
+        transmitMessageResult = gos_gcpTransmitMessageInternal(channel, messageId, pMessagePayload, payloadSize);
     }
     else
     {
-        // Nothing to do.
+        // Mutex error.
     }
 
-    gos_mutexUnlock(&gcpTxMutexes[channel]);
+    (void_t) gos_mutexUnlock(&gcpTxMutexes[channel]);
 
     return transmitMessageResult;
 }
@@ -247,8 +262,9 @@ gos_result_t gos_gcpTransmitMessage (
  */
 gos_result_t gos_gcpReceiveMessage (
         gos_gcpChannelNumber_t  channel,
-        gos_gcpMessageHeader_t* pTargetMessageHeader,
-        void_t*                 pPayloadTarget
+        u16_t*                  pMessageId,
+        void_t*                 pPayloadTarget,
+        u16_t                   targetSize
         )
 {
     /*
@@ -259,24 +275,9 @@ gos_result_t gos_gcpReceiveMessage (
     /*
      * Function code.
      */
-    if (gos_mutexLock(&gcpRxMutexes[channel], GOS_MUTEX_ENDLESS_TMO) == GOS_SUCCESS    &&
-        pTargetMessageHeader                            != NULL                        &&
-        pPayloadTarget                                  != NULL                        &&
-        channel                                         <  CFG_GCP_CHANNELS_MAX_NUMBER &&
-        channelFunctions[channel].gcpReceiveFunction    != NULL
-        )
+    if (gos_mutexLock(&gcpRxMutexes[channel], GOS_MUTEX_ENDLESS_TMO) == GOS_SUCCESS)
     {
-        // Receive header and frames, check CRC.
-        if (gos_gcpReceiveFrames(channel, (u8_t*)pTargetMessageHeader, (u16_t)sizeof(*pTargetMessageHeader)) == GOS_SUCCESS &&
-            gos_gcpReceiveFrames(channel, (u8_t*)pPayloadTarget,       pTargetMessageHeader->payloadSize)    == GOS_SUCCESS &&
-            pTargetMessageHeader->payloadCrc == gos_crcDriverGetCrc((u8_t*)pPayloadTarget, (u32_t)pTargetMessageHeader->payloadSize))
-        {
-            receiveMessageResult = GOS_SUCCESS;
-        }
-        else
-        {
-            // Nothing to do.
-        }
+        receiveMessageResult = gos_gcpReceiveMessageInternal(channel, pMessageId, pPayloadTarget, targetSize);
     }
     else
     {
@@ -289,78 +290,66 @@ gos_result_t gos_gcpReceiveMessage (
 }
 
 /**
- * @brief   This function transmits the message frames.
- * @details This function prepares and transmits the header frame, and then it
- *          transmits the data frames.
+ * @brief   Internal transmitter function (re-entrant).
+ * @details Transmits a message over GCP (header request, payload, and
+ *          then receives a response header).
  *
- * @param   channel       : GCP channel number.
- * @param   pMessageBytes : Pointer to the message buffer to be transmitted.
- * @param   messageSize   : Size of the message.
+ * @param   channel         : GCP channel number.
+ * @param   messageId       : ID of the message.
+ * @param   pMessagePayload : Pointer to the payload buffer.
+ * @param   payloadSize     : Size of the payload (number of bytes).
  *
- * @return  Result of frame transmission.
+ * @return  Result of message transmission.
  *
- * @retval  GOS_SUCCESS   : Frame transmission successful.
- * @retval  GOS_ERROR     : Transmit function is NULL pointer or frame transmission failed.
+ * @retval  GOS_SUCCESS : Transmission successful.
+ * @retval  GOS_ERROR   : One of the function parameters are invalid or
+ *                        there was a transmission or reception error.
  */
-GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitFrames (
-        gos_gcpChannelNumber_t channel,
-        u8_t* pMessageBytes,
-        u16_t messageSize
-        )
+GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitMessageInternal (
+        gos_gcpChannelNumber_t  channel,
+        u16_t                   messageId,
+        void_t*                 pMessagePayload,
+        u16_t                   payloadSize
+)
 {
     /*
      * Local variables.
      */
-    gos_result_t         transmitFramesResult = GOS_ERROR;
-    gos_gcpFrameHeader_t frameHeader          = {0};
-    u16_t                frameNumber          = 0u;
-    u16_t                frameCounter         = 0u;
+    gos_result_t         transmitMessageResult = GOS_ERROR;
+    gos_gcpHeaderFrame_t requestHeaderFrame    = {0};
+    gos_gcpHeaderFrame_t responseHeaderFrame   = {0};
+    gos_gcpAck_t         headerAck             = (gos_gcpAck_t)0u;
 
     /*
      * Function code.
      */
-    if (channelFunctions[channel].gcpTransmitFunction != NULL)
+    if ((pMessagePayload                              != NULL                        ||
+        (pMessagePayload                              == NULL                        &&
+        payloadSize                                   == 0u))                        &&
+        channel                                       <  CFG_GCP_CHANNELS_MAX_NUMBER &&
+        channelFunctions[channel].gcpTransmitFunction != NULL)
     {
-        // Fill out frame header.
-        frameHeader.protocolVersion = FRAME_PROTOCOL_VERSION;
-        frameHeader.dataSize        = messageSize;
-        frameHeader.frameSize       = FRAME_SIZE;
-        frameHeader.sessionId       = channelFunctions[channel].gcpSessionCounter++;
-        frameHeader.dataCrc         = gos_crcDriverGetCrc(pMessageBytes, messageSize);
-        frameHeader.headerCrc       = gos_crcDriverGetCrc((u8_t*)&frameHeader, (u32_t)(sizeof(frameHeader) - sizeof(frameHeader.headerCrc)));
+        // Fill out header frame.
+        requestHeaderFrame.ackType       = GCP_ACK_REQ;
+        requestHeaderFrame.protocolMajor = GCP_PROTOCOL_VERSION_MAJOR;
+        requestHeaderFrame.protocolMinor = GCP_PROTOCOL_VERSION_MINOR;
+        requestHeaderFrame.dataSize      = payloadSize;
+        requestHeaderFrame.messageId     = messageId;
+        requestHeaderFrame.dataCrc       = gos_crcDriverGetCrc((u8_t*)pMessagePayload, payloadSize);
+        requestHeaderFrame.headerCrc     = gos_crcDriverGetCrc((u8_t*)&requestHeaderFrame, (u32_t)(sizeof(requestHeaderFrame) - sizeof(requestHeaderFrame.headerCrc)));
 
-        // Calculate frame number (with padding).
-        frameNumber = messageSize / FRAME_SIZE + (messageSize % FRAME_SIZE != 0);
-
-        // Transmit header.
-        if (channelFunctions[channel].gcpTransmitFunction((u8_t*)&frameHeader, (u16_t)sizeof(frameHeader)) == GOS_SUCCESS)
+        if (channelFunctions[channel].gcpTransmitFunction((u8_t*)&requestHeaderFrame, (u16_t)sizeof(requestHeaderFrame)) == GOS_SUCCESS &&
+            channelFunctions[channel].gcpTransmitFunction((u8_t*)pMessagePayload, requestHeaderFrame.dataSize) == GOS_SUCCESS &&
+            channelFunctions[channel].gcpReceiveFunction((u8_t*)&responseHeaderFrame, (u16_t)sizeof(responseHeaderFrame)) == GOS_SUCCESS &&
+            gos_gcpValidateHeader(&responseHeaderFrame, &headerAck) == GOS_SUCCESS &&
+            responseHeaderFrame.ackType == GCP_ACK_OK)
         {
-            // Transmit frames.
-            for (frameCounter = 0u; frameCounter < frameNumber; frameCounter++)
-            {
-                // Transmit frame.
-                if (channelFunctions[channel].gcpTransmitFunction((u8_t*)(pMessageBytes + (frameCounter * FRAME_SIZE)), (u16_t)FRAME_SIZE) != GOS_SUCCESS)
-                {
-                    break;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-
-            if (frameCounter == frameNumber)
-            {
-                transmitFramesResult = GOS_SUCCESS;
-            }
-            else
-            {
-                // Nothing to do.
-            }
+            // Transmission successful.
+            transmitMessageResult = GOS_SUCCESS;
         }
         else
         {
-            // Nothing to do.
+            // Error.
         }
     }
     else
@@ -368,87 +357,189 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitFrames (
         // Nothing to do.
     }
 
-    return transmitFramesResult;
+    return transmitMessageResult;
+}
+
+
+/**
+ * @brief   Internal receiver function (re-entrant).
+ * @details Receives a message over GCP (header, payload, and
+ *          then transmits a response header).
+ *
+ * @param   channel         : GCP channel number.
+ * @param   messageId       : Pointer to a variable to store the message ID.
+ * @param   pMessagePayload : Pointer to a buffer to store the payload.
+ * @param   payloadSize     : Size of the payload buffer (in bytes).
+ *
+ * @return  Result of message reception.
+ *
+ * @retval  GOS_SUCCESS : Reception successful.
+ * @retval  GOS_ERROR   : One of the function parameters are invalid or
+ *                        request header validation failed or payload
+ *                        validation failed.
+ */
+GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveMessageInternal (
+        gos_gcpChannelNumber_t  channel,
+        u16_t*                  pMessageId,
+        void_t*                 pPayloadTarget,
+        u16_t                   targetSize
+        )
+{
+    /*
+     * Local variables.
+     */
+    gos_result_t         receiveMessageResult  = GOS_ERROR;
+    gos_gcpHeaderFrame_t requestHeaderFrame    = {0};
+    gos_gcpHeaderFrame_t responseHeaderFrame   = {0};
+    gos_gcpAck_t         headerAck             = (gos_gcpAck_t)0u;
+
+    /*
+     * Function code.
+     */
+    if (pMessageId                                   != NULL                        &&
+        pPayloadTarget                               != NULL                        &&
+        channel                                      <  CFG_GCP_CHANNELS_MAX_NUMBER &&
+        channelFunctions[channel].gcpReceiveFunction != NULL
+        )
+    {
+        // Prepare response header frame.
+        responseHeaderFrame.dataSize      = 0u;
+        responseHeaderFrame.dataCrc       = 0u;
+        responseHeaderFrame.protocolMajor = GCP_PROTOCOL_VERSION_MAJOR;
+        responseHeaderFrame.protocolMinor = GCP_PROTOCOL_VERSION_MINOR;
+
+        // Receive header and data frame.
+        if (channelFunctions[channel].gcpReceiveFunction((u8_t*)&requestHeaderFrame, (u16_t)sizeof(requestHeaderFrame)) == GOS_SUCCESS &&
+            gos_gcpValidateHeader(&requestHeaderFrame, &headerAck) == GOS_SUCCESS &&
+            (requestHeaderFrame.dataSize == 0 || (requestHeaderFrame.dataSize > 0 &&
+            channelFunctions[channel].gcpReceiveFunction((u8_t*)pPayloadTarget, requestHeaderFrame.dataSize) == GOS_SUCCESS &&
+            gos_gcpValidateData(&requestHeaderFrame, pPayloadTarget, &headerAck) == GOS_SUCCESS)))
+        {
+            // Data OK. Send response.
+            *pMessageId = requestHeaderFrame.messageId;
+            responseHeaderFrame.ackType = GCP_ACK_OK;
+            responseHeaderFrame.headerCrc = gos_crcDriverGetCrc((u8_t*)&responseHeaderFrame, (u16_t)(sizeof(responseHeaderFrame) - sizeof(responseHeaderFrame.headerCrc)));
+            if (channelFunctions[channel].gcpTransmitFunction((u8_t*)&responseHeaderFrame, (u16_t)sizeof(responseHeaderFrame)) == GOS_SUCCESS)
+            {
+                // Reception successful.
+                receiveMessageResult = GOS_SUCCESS;
+            }
+            else
+            {
+                // Transmit error.
+            }
+        }
+        else
+        {
+            // Send response.
+            responseHeaderFrame.ackType   = (u8_t)headerAck;
+            responseHeaderFrame.headerCrc = gos_crcDriverGetCrc((u8_t*)&responseHeaderFrame, (u16_t)(sizeof(responseHeaderFrame) - sizeof(responseHeaderFrame.headerCrc)));
+            (void_t) channelFunctions[channel].gcpTransmitFunction((u8_t*)&responseHeaderFrame, (u16_t)sizeof(responseHeaderFrame));
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return receiveMessageResult;
 }
 
 /**
- * @brief   This function receives the message frames.
- * @details This function receives the header frame, and based on the data in the
- *          header, it receives the data frames.
+ * @brief   Validates the given GCP header.
+ * @details Checks the CRC and the protocol version of the header. Returns the acknowledge
+ *          code in the variable passed as a pointer in case the validation fails.
  *
- * @param   channel     : GCP channel number.
- * @param   pTarget     : Target buffer to store the frames in.
- * @param   targetSize  : Size of target buffer.
+ * @param   pHeader : Pointer to the GCP header to validate.
+ * @param   pAck    : Pointer to an acknowledge variable to store the result in.
  *
- * @return  Result of frame reception.
+ * @return  Result of validation.
  *
- * @retval  GOS_SUCCESS : Frames received successfully.
- * @retval  GOS_ERROR   : Receive function is NULL pointer, frame reception error or
- *                        invalid message CRC.
+ * @retval  GOS_SUCCESS : Validation successful.
+ * @retval  GOS_ERROR   : CRC or PV error or NULL pointer parameter.
  */
-GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveFrames (
-        gos_gcpChannelNumber_t channel,
-        u8_t* pTarget,
-        u16_t targetSize
-        )
+GOS_STATIC gos_result_t gos_gcpValidateHeader (gos_gcpHeaderFrame_t* pHeader, gos_gcpAck_t* pAck)
 {
     /*
      * Local variables.
      */
-    gos_result_t         receiveFramesResult = GOS_ERROR;
-    gos_gcpFrameHeader_t frameHeader         = {0};
-    u16_t                frameNumber         = 0u;
-    u16_t                frameCounter        = 0u;
+    gos_result_t validateSuccess = GOS_ERROR;
 
     /*
      * Function code.
      */
-    // Receive header.
-    if (channelFunctions[channel].gcpReceiveFunction((u8_t*)&frameHeader, (u16_t)sizeof(frameHeader)) == GOS_SUCCESS)
+    if (pHeader != NULL && pAck != NULL)
     {
-        // Check header integrity, protocol version and target size.
-        if (frameHeader.headerCrc == gos_crcDriverGetCrc((u8_t*)&frameHeader, (u32_t)(sizeof(frameHeader) - sizeof(frameHeader.headerCrc))) &&
-            frameHeader.protocolVersion == FRAME_PROTOCOL_VERSION &&
-            targetSize >= frameHeader.dataSize)
+        // Check header CRC.
+        if (gos_crcDriverGetCrc((u8_t*)pHeader, (u16_t)(sizeof(*pHeader) - sizeof(pHeader->headerCrc))) == pHeader->headerCrc)
         {
-            // Calculate frame number.
-            frameNumber = frameHeader.dataSize / frameHeader.frameSize + (frameHeader.dataSize % frameHeader.frameSize != 0);
-
-            // Receive frames.
-            for (frameCounter = 0u; frameCounter < frameNumber; frameCounter++)
+            // Validate protocol version
+            if (pHeader->protocolMajor == GCP_PROTOCOL_VERSION_MAJOR &&
+                pHeader->protocolMinor == GCP_PROTOCOL_VERSION_MINOR)
             {
-                // Receive frame.
-                if (channelFunctions[channel].gcpReceiveFunction((u8_t*)(pTarget + frameCounter * frameHeader.frameSize), frameHeader.frameSize) != GOS_SUCCESS)
-                {
-                    break;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-
-            // Check data integrity.
-            if (frameCounter == frameNumber &&
-                (frameHeader.dataCrc == gos_crcDriverGetCrc(pTarget, (u32_t)frameHeader.dataSize) ||
-                frameHeader.dataSize == 0u))
-            {
-                receiveFramesResult = GOS_SUCCESS;
+                validateSuccess = GOS_SUCCESS;
             }
             else
             {
-                // Nothing to do.
+                // Protocol version error.
+                *pAck = GCP_ACK_PV_ERROR;
             }
         }
         else
         {
-            // Nothing to do.
+            *pAck = GCP_ACK_CRC_ERROR;
         }
     }
     else
     {
-        // Nothing to do.
+        // NULL pointer error.
     }
 
-    return receiveFramesResult;
+    return validateSuccess;
+}
+
+/**
+ * @brief   Validates the given GCP payload/data.
+ * @details Checks the CRC of the given payload buffer based on the GCP header passed as a
+ *          parameter. Returns the acknowledge code in the variable passed as a pointer in
+ *          case the validation fails.
+ *
+ * @param   pHeader : Pointer to the GCP header containing the payload data.
+ * @param   pData   : Pointer to the data buffer to validate.
+ * @param   pAck    : Pointer to an acknowledge variable to store the result in.
+ *
+ * @return  Result of validation.
+ *
+ * @retval  GOS_SUCCESS : Validation successful.
+ * @retval  GOS_ERROR   : CRC error or NULL pointer parameter.
+ */
+GOS_STATIC gos_result_t gos_gcpValidateData (gos_gcpHeaderFrame_t* pHeader, void_t* pData, gos_gcpAck_t* pAck)
+{
+    /*
+     * Local variables.
+     */
+    gos_result_t validateSuccess = GOS_ERROR;
+
+    /*
+     * Function code.
+     */
+    if (pHeader != NULL && pData != NULL && pAck != NULL)
+    {
+        // Check data CRC.
+        if (gos_crcDriverGetCrc((u8_t*)pData, (u16_t)(pHeader->dataSize)) == pHeader->dataCrc)
+        {
+            // Data OK.
+            validateSuccess = GOS_SUCCESS;
+        }
+        else
+        {
+            *pAck = GCP_ACK_CRC_ERROR;
+        }
+    }
+    else
+    {
+        // NULL pointer error.
+    }
+
+    return validateSuccess;
 }

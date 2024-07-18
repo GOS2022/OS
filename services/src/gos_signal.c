@@ -62,7 +62,6 @@
  */
 #include <gos_signal.h>
 #include <gos_error.h>
-#include <gos_queue.h>
 #include <gos_trigger.h>
 #include <string.h>
 
