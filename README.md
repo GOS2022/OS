@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # GOS2022
 This repository contains the source code of GOS2022
 
@@ -24,7 +23,3 @@ If you have any questions or ideas, feel free to contact me: gaborr97@gmail.com
 Current OS version: 0.11
 Last updated: 2024-07-18
 (c) 2023, Ahmed Gazar
-=======
-# OS
-This repository contains the OS source code.
->>>>>>> a66cf8b39d3a719196f961ba1ad10a9213057efc
