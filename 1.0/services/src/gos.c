@@ -221,12 +221,12 @@ void_t gos_Dump (void_t)
     if ((privileges & GOS_PRIV_TASK_MANIPULATE) != GOS_PRIV_TASK_MANIPULATE)
     {
         (void_t) gos_taskAddPrivilege(currentTaskId, GOS_PRIV_TASK_MANIPULATE);
-        gos_taskWakeup(systemTaskId);
+        (void_t) gos_taskWakeup(systemTaskId);
         (void_t) gos_taskRemovePrivilege(currentTaskId, GOS_PRIV_TASK_MANIPULATE);
     }
     else
     {
-        gos_taskWakeup(systemTaskId);
+        (void_t) gos_taskWakeup(systemTaskId);
     }
 
     (void_t) gos_shellSuspend();
