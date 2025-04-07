@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_trigger.c
 //! @author     Ahmed Gazar
-//! @date       2023-11-15
-//! @version    2.9
+//! @date       2025-03-28
+//! @version    2.10
 //!
 //! @brief      GOS trigger service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_trigger.h
@@ -45,6 +45,8 @@
 //                                               greater or equal to equal only
 //                                          +    Decrement task unblock added if value equals
 //                                               desired value
+// 2.10       2025-03-28    Ahmed Gazar     *    Wait function condition changed from greater or
+//                                               equal to equal only
 //*************************************************************************************************
 //
 // Copyright (c) 2023 Ahmed Gazar
@@ -171,7 +173,7 @@ GOS_INLINE gos_result_t gos_triggerWait (gos_trigger_t* pTrigger, u32_t value, u
         // Check if the trigger value is reached after unblock.
         GOS_ATOMIC_ENTER
 
-        if (pTrigger->valueCounter >= pTrigger->desiredValue)
+        if (pTrigger->valueCounter == pTrigger->desiredValue)
         {
             triggerWaitResult      = GOS_SUCCESS;
             pTrigger->waiterTaskId = GOS_INVALID_TASK_ID;

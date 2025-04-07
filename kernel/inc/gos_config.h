@@ -54,14 +54,9 @@
  * Use one of the following includes to specify the
  * required configuration.
  */
-#if defined(GOS2022_MINIMAL_EXAMPLE)
-#include <gos_minimal_example_app_config.h>
-#elif defined(GOS2022_SYSMON_EXAMPLE)
-#include <gos_sysmon_app_config.h>
-#elif defined(GOS2022_BOOTLOADER)
+#if defined(GOS2022_BOOTLOADER)
 #include <gos_bootloader_config.h>
 #else
-
 /*
  * Macros
  */
@@ -120,7 +115,7 @@
 /**
  * System task stack size.
  */
-#define CFG_SYSTEM_TASK_STACK_SIZE      ( 0x400 )
+#define CFG_SYSTEM_TASK_STACK_SIZE      ( 0x800 )
 /**
  * Signal daemon task stack size.
  */
@@ -132,7 +127,7 @@
 /**
  * Message daemon task stack size.
  */
-#define CFG_TASK_MESSAGE_DAEMON_STACK   ( 0x300 )
+#define CFG_TASK_MESSAGE_DAEMON_STACK   ( 0x600 )
 /**
  * Shell daemon task stack size.
  */
@@ -262,6 +257,10 @@
  * Command buffer size.
  */
 #define CFG_SHELL_COMMAND_BUFFER_SIZE   ( 200 )
+/**
+ * Shell daemon startup delay time [ms].
+ */
+#define CFG_SHELL_STARTUP_DELAY_MS      ( 500 )
 
 /*
  * GCP service parameters.
@@ -295,7 +294,7 @@
 /**
  * Maximum number of user messages.
  */
-#define CFG_SYSMON_MAX_USER_MESSAGES    ( 6 )
+#define CFG_SYSMON_MAX_USER_MESSAGES    ( 24 )
 
 /*
  * Error handling parameters.

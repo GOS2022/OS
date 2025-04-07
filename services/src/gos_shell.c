@@ -358,6 +358,7 @@ GOS_STATIC void_t gos_shellDaemonTask (void_t)
     /*
      * Function code.
      */
+    (void_t) gos_taskSleep(CFG_SHELL_STARTUP_DELAY_MS);
     (void_t) gos_shellDriverTransmitString(GOS_SHELL_DISPLAY_TEXT);
 
     for (;;)

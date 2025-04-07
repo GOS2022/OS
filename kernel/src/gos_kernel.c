@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_kernel.c
 //! @author     Ahmed Gazar
-//! @date       2024-04-24
-//! @version    1.20
+//! @date       2025-03-22
+//! @version    1.21
 //!
 //! @brief      GOS kernel source.
 //! @details    For a more detailed description of this module, please refer to @ref gos_kernel.h
@@ -74,6 +74,7 @@
 //                                               moved to the beginning of loop
 // 1.19       2024-04-17    Ahmed Gazar     *    Task block timeout check fixed
 // 1.20       2024-04-24    Ahmed Gazar     -    Process service include removed
+// 1.21       2025-03-22    Ahmed Gazar     +    gos_kernelRegisterPreResetHook() added
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -208,6 +209,11 @@ u32_t                               currentTaskIndex             = 0u;
  */
 u16_t                               cpuUseLimit                  = 10000;
 
+/**
+ * Flag to indicate whether kernel is running.
+ */
+bool_t                              isKernelRunning              = GOS_FALSE;
+
 /*
  * Static variables
  */
@@ -242,6 +248,11 @@ GOS_STATIC gos_sysTickHook_t        kernelSysTickHookFunction    = NULL;
 GOS_STATIC gos_privilegedHook_t     kernelPrivilegedHookFunction = NULL;
 
 /**
+ * Kernel pre-reset hook function.
+ */
+GOS_STATIC gos_preResetHook_t       kernelPreResetHookFunction   = NULL;
+
+/**
  * Reset required flag.
  */
 GOS_STATIC bool_t                   resetRequired                = GOS_FALSE;
@@ -255,11 +266,6 @@ GOS_STATIC bool_t                   privilegedModeSetRequired    = GOS_FALSE;
  * Previous tick value for sleep and block tick calculation.
  */
 GOS_STATIC u32_t                    previousTick                 = 0u;
-
-/**
- * Flag to indicate whether kernel is running.
- */
-GOS_STATIC bool_t                   isKernelRunning              = GOS_FALSE;
 
 /*
  * External variables
@@ -459,6 +465,32 @@ gos_result_t gos_kernelRegisterPrivilegedHook (gos_privilegedHook_t privilegedHo
 }
 
 /*
+ * Function: gos_kernelRegisterPreResetHook
+ */
+gos_result_t gos_kernelRegisterPreResetHook (gos_preResetHook_t preResetHookFunction)
+{
+    /*
+     * Local variables.
+     */
+    gos_result_t hookRegisterResult = GOS_ERROR;
+
+    /*
+     * Function code.
+     */
+    if (preResetHookFunction != NULL && kernelPreResetHookFunction == NULL)
+    {
+    	kernelPreResetHookFunction = preResetHookFunction;
+        hookRegisterResult = GOS_SUCCESS;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return hookRegisterResult;
+}
+
+/*
  * Function: gos_kernelSubscribeDumpReadySignal
  */
 gos_result_t gos_kernelSubscribeDumpReadySignal (gos_signalHandler_t dumpReadySignalHandler)
@@ -557,6 +589,14 @@ void_t gos_kernelReset (void_t)
     /*
      * Function code.
      */
+	if (kernelPreResetHookFunction != NULL)
+	{
+		kernelPreResetHookFunction();
+	}
+	else
+	{
+		// No hook function registered.
+	}
     resetRequired = GOS_TRUE;
     gos_kernelReschedule(GOS_UNPRIVILEGED);
 }

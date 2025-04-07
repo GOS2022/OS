@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_gcp.c
 //! @author     Ahmed Gazar
-//! @date       2024-07-18
-//! @version    3.0
+//! @date       2025-04-06
+//! @version    3.1
 //!
 //! @brief      GOS General Communication Protocol handler service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_gcp.h
@@ -34,6 +34,7 @@
 //                                               channel
 // 2.4        2023-09-14    Ahmed Gazar     +    Mutex initialization result processing added
 // 3.0        2024-07-18    Ahmed Gazar     Service rework
+// 3.1        2025-04-06    Ahmed Gazar     *    GOS_CONCAT_RESULT used for init
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -141,14 +142,16 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitMessageInternal (
         gos_gcpChannelNumber_t  channel,
         u16_t                   messageId,
         void_t*                 pMessagePayload,
-        u16_t                   payloadSize
+        u16_t                   payloadSize,
+		u16_t                   maxChunkSize
         );
 
 GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveMessageInternal (
         gos_gcpChannelNumber_t  channel,
         u16_t*                  pMessageId,
         void_t*                 pPayloadTarget,
-        u16_t                   targetSize
+        u16_t                   targetSize,
+		u16_t                   maxChunkSize
         );
 
 GOS_STATIC gos_result_t gos_gcpValidateHeader (
@@ -178,17 +181,8 @@ gos_result_t gos_gcpInit (void_t)
      */
     for (mutexIdx = 0u; mutexIdx < CFG_GCP_CHANNELS_MAX_NUMBER; mutexIdx++)
     {
-        gcpInitResult &= gos_mutexInit(&gcpRxMutexes[mutexIdx]);
-        gcpInitResult &= gos_mutexInit(&gcpTxMutexes[mutexIdx]);
-    }
-
-    if (gcpInitResult != GOS_SUCCESS)
-    {
-        gcpInitResult = GOS_ERROR;
-    }
-    else
-    {
-        // Nothing to do.
+        GOS_CONCAT_RESULT(gcpInitResult, gos_mutexInit(&gcpRxMutexes[mutexIdx]));
+        GOS_CONCAT_RESULT(gcpInitResult, gos_mutexInit(&gcpTxMutexes[mutexIdx]));
     }
 
     return gcpInitResult;
@@ -232,7 +226,8 @@ gos_result_t gos_gcpTransmitMessage (
         gos_gcpChannelNumber_t  channel,
         u16_t                   messageId,
         void_t*                 pMessagePayload,
-        u16_t                   payloadSize
+        u16_t                   payloadSize,
+		u16_t                   maxChunkSize
         )
 {
     /*
@@ -245,7 +240,7 @@ gos_result_t gos_gcpTransmitMessage (
      */
     if (gos_mutexLock(&gcpTxMutexes[channel], GOS_MUTEX_ENDLESS_TMO) == GOS_SUCCESS)
     {
-        transmitMessageResult = gos_gcpTransmitMessageInternal(channel, messageId, pMessagePayload, payloadSize);
+        transmitMessageResult = gos_gcpTransmitMessageInternal(channel, messageId, pMessagePayload, payloadSize, maxChunkSize);
     }
     else
     {
@@ -264,7 +259,8 @@ gos_result_t gos_gcpReceiveMessage (
         gos_gcpChannelNumber_t  channel,
         u16_t*                  pMessageId,
         void_t*                 pPayloadTarget,
-        u16_t                   targetSize
+        u16_t                   targetSize,
+		u16_t                   maxChunkSize
         )
 {
     /*
@@ -277,7 +273,7 @@ gos_result_t gos_gcpReceiveMessage (
      */
     if (gos_mutexLock(&gcpRxMutexes[channel], GOS_MUTEX_ENDLESS_TMO) == GOS_SUCCESS)
     {
-        receiveMessageResult = gos_gcpReceiveMessageInternal(channel, pMessageId, pPayloadTarget, targetSize);
+        receiveMessageResult = gos_gcpReceiveMessageInternal(channel, pMessageId, pPayloadTarget, targetSize, maxChunkSize);
     }
     else
     {
@@ -309,7 +305,8 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitMessageInternal (
         gos_gcpChannelNumber_t  channel,
         u16_t                   messageId,
         void_t*                 pMessagePayload,
-        u16_t                   payloadSize
+        u16_t                   payloadSize,
+		u16_t                   maxChunkSize
 )
 {
     /*
@@ -319,6 +316,9 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitMessageInternal (
     gos_gcpHeaderFrame_t requestHeaderFrame    = {0};
     gos_gcpHeaderFrame_t responseHeaderFrame   = {0};
     gos_gcpAck_t         headerAck             = (gos_gcpAck_t)0u;
+    u8_t                 dataChunks            = 0u;
+    u8_t                 chunkIndex            = 0u;
+    u16_t                tempSize              = 0u;
 
     /*
      * Function code.
@@ -338,18 +338,67 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitMessageInternal (
         requestHeaderFrame.dataCrc       = gos_crcDriverGetCrc((u8_t*)pMessagePayload, payloadSize);
         requestHeaderFrame.headerCrc     = gos_crcDriverGetCrc((u8_t*)&requestHeaderFrame, (u32_t)(sizeof(requestHeaderFrame) - sizeof(requestHeaderFrame.headerCrc)));
 
-        if (channelFunctions[channel].gcpTransmitFunction((u8_t*)&requestHeaderFrame, (u16_t)sizeof(requestHeaderFrame)) == GOS_SUCCESS &&
-            channelFunctions[channel].gcpTransmitFunction((u8_t*)pMessagePayload, requestHeaderFrame.dataSize) == GOS_SUCCESS &&
-            channelFunctions[channel].gcpReceiveFunction((u8_t*)&responseHeaderFrame, (u16_t)sizeof(responseHeaderFrame)) == GOS_SUCCESS &&
-            gos_gcpValidateHeader(&responseHeaderFrame, &headerAck) == GOS_SUCCESS &&
-            responseHeaderFrame.ackType == GCP_ACK_OK)
+        if (channelFunctions[channel].gcpTransmitFunction((u8_t*)&requestHeaderFrame, (u16_t)sizeof(requestHeaderFrame)) == GOS_SUCCESS)
         {
-            // Transmission successful.
-            transmitMessageResult = GOS_SUCCESS;
+        	if (requestHeaderFrame.dataSize == 0u)
+        	{
+        		if (channelFunctions[channel].gcpReceiveFunction((u8_t*)&responseHeaderFrame, (u16_t)sizeof(responseHeaderFrame)) == GOS_SUCCESS &&
+			        gos_gcpValidateHeader(&responseHeaderFrame, &headerAck) == GOS_SUCCESS &&
+			        responseHeaderFrame.ackType == GCP_ACK_OK	)
+        		{
+                    // Transmission successful.
+                    transmitMessageResult = GOS_SUCCESS;
+        		}
+        		else
+        		{
+        			// Error.
+        		}
+        	}
+        	else
+        	{
+            	dataChunks = requestHeaderFrame.dataSize / maxChunkSize;
+
+            	if (requestHeaderFrame.dataSize % maxChunkSize != 0)
+            	{
+            		dataChunks++;
+            	}
+            	else
+            	{
+            		// Chunk number is exact.
+            	}
+
+            	for (chunkIndex = 0u; chunkIndex < dataChunks; chunkIndex++)
+            	{
+            		if ((chunkIndex + 1) * maxChunkSize > requestHeaderFrame.dataSize)
+            		{
+            			tempSize = requestHeaderFrame.dataSize - chunkIndex * maxChunkSize;
+            		}
+            		else
+            		{
+                		tempSize = maxChunkSize;
+            		}
+
+            		if (channelFunctions[channel].gcpTransmitFunction((u8_t*)(pMessagePayload + chunkIndex * maxChunkSize), tempSize) == GOS_SUCCESS &&
+            			channelFunctions[channel].gcpReceiveFunction((u8_t*)&responseHeaderFrame, (u16_t)sizeof(responseHeaderFrame)) == GOS_SUCCESS &&
+    			        gos_gcpValidateHeader(&responseHeaderFrame, &headerAck) == GOS_SUCCESS &&
+    			        responseHeaderFrame.ackType == GCP_ACK_OK	)
+            		{
+                        // Transmission successful.
+            			// Set temporary success.
+                        transmitMessageResult = GOS_SUCCESS;
+            		}
+            		else
+            		{
+            			// Error.
+            			transmitMessageResult = GOS_ERROR;
+            			break;
+            		}
+            	}
+        	}
         }
         else
         {
-            // Error.
+        	// Header frame transmit error.
         }
     }
     else
@@ -382,7 +431,8 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveMessageInternal (
         gos_gcpChannelNumber_t  channel,
         u16_t*                  pMessageId,
         void_t*                 pPayloadTarget,
-        u16_t                   targetSize
+        u16_t                   targetSize,
+		u16_t                   maxChunkSize
         )
 {
     /*
@@ -392,6 +442,9 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveMessageInternal (
     gos_gcpHeaderFrame_t requestHeaderFrame    = {0};
     gos_gcpHeaderFrame_t responseHeaderFrame   = {0};
     gos_gcpAck_t         headerAck             = (gos_gcpAck_t)0u;
+    u8_t                 dataChunks            = 0u;
+    u8_t                 chunkIndex            = 0u;
+    u16_t                tempSize              = 0u;
 
     /*
      * Function code.
@@ -408,26 +461,83 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveMessageInternal (
         responseHeaderFrame.protocolMajor = GCP_PROTOCOL_VERSION_MAJOR;
         responseHeaderFrame.protocolMinor = GCP_PROTOCOL_VERSION_MINOR;
 
-        // Receive header and data frame.
         if (channelFunctions[channel].gcpReceiveFunction((u8_t*)&requestHeaderFrame, (u16_t)sizeof(requestHeaderFrame)) == GOS_SUCCESS &&
-            gos_gcpValidateHeader(&requestHeaderFrame, &headerAck) == GOS_SUCCESS &&
-            (requestHeaderFrame.dataSize == 0 || (requestHeaderFrame.dataSize > 0 &&
-            channelFunctions[channel].gcpReceiveFunction((u8_t*)pPayloadTarget, requestHeaderFrame.dataSize) == GOS_SUCCESS &&
-            gos_gcpValidateData(&requestHeaderFrame, pPayloadTarget, &headerAck) == GOS_SUCCESS)))
+            gos_gcpValidateHeader(&requestHeaderFrame, &headerAck) == GOS_SUCCESS)
         {
-            // Data OK. Send response.
-            *pMessageId = requestHeaderFrame.messageId;
-            responseHeaderFrame.ackType = GCP_ACK_OK;
-            responseHeaderFrame.headerCrc = gos_crcDriverGetCrc((u8_t*)&responseHeaderFrame, (u16_t)(sizeof(responseHeaderFrame) - sizeof(responseHeaderFrame.headerCrc)));
-            if (channelFunctions[channel].gcpTransmitFunction((u8_t*)&responseHeaderFrame, (u16_t)sizeof(responseHeaderFrame)) == GOS_SUCCESS)
-            {
-                // Reception successful.
-                receiveMessageResult = GOS_SUCCESS;
-            }
-            else
-            {
-                // Transmit error.
-            }
+        	if (requestHeaderFrame.dataSize == 0)
+        	{
+        		// OK.
+                // Data OK. Send response.
+                *pMessageId = requestHeaderFrame.messageId;
+                responseHeaderFrame.ackType = GCP_ACK_OK;
+                responseHeaderFrame.headerCrc = gos_crcDriverGetCrc((u8_t*)&responseHeaderFrame, (u16_t)(sizeof(responseHeaderFrame) - sizeof(responseHeaderFrame.headerCrc)));
+                if (channelFunctions[channel].gcpTransmitFunction((u8_t*)&responseHeaderFrame, (u16_t)sizeof(responseHeaderFrame)) == GOS_SUCCESS)
+                {
+                    // Reception successful.
+                    receiveMessageResult = GOS_SUCCESS;
+                }
+                else
+                {
+                    // Transmit error.
+                }
+        	}
+        	else
+        	{
+            	dataChunks = requestHeaderFrame.dataSize / maxChunkSize;
+
+            	if (requestHeaderFrame.dataSize % maxChunkSize != 0)
+            	{
+            		dataChunks++;
+            	}
+            	else
+            	{
+            		// Chunk number is exact.
+            	}
+
+            	for (chunkIndex = 0u; chunkIndex < dataChunks; chunkIndex++)
+            	{
+            		if ((chunkIndex + 1) * maxChunkSize > requestHeaderFrame.dataSize)
+            		{
+            			tempSize = requestHeaderFrame.dataSize - chunkIndex * maxChunkSize;
+            		}
+            		else
+            		{
+                		tempSize = maxChunkSize;
+            		}
+
+            		if (channelFunctions[channel].gcpReceiveFunction((u8_t*)(pPayloadTarget + chunkIndex * maxChunkSize), tempSize) == GOS_SUCCESS)
+            		{
+            			// OK, send response.
+                        // Data OK. Send response.
+                        *pMessageId = requestHeaderFrame.messageId;
+                        responseHeaderFrame.ackType = GCP_ACK_OK;
+                        responseHeaderFrame.headerCrc = gos_crcDriverGetCrc((u8_t*)&responseHeaderFrame, (u16_t)(sizeof(responseHeaderFrame) - sizeof(responseHeaderFrame.headerCrc)));
+                        if (channelFunctions[channel].gcpTransmitFunction((u8_t*)&responseHeaderFrame, (u16_t)sizeof(responseHeaderFrame)) == GOS_SUCCESS)
+                        {
+                            // OK continue.
+                        }
+                        else
+                        {
+                            // Transmit error.
+                        	break;
+                        }
+            		}
+            		else
+            		{
+            			break;
+            		}
+            	}
+
+            	// Integrity check.
+            	if (gos_gcpValidateData(&requestHeaderFrame, pPayloadTarget, &headerAck) == GOS_SUCCESS)
+            	{
+            		receiveMessageResult = GOS_SUCCESS;
+            	}
+            	else
+            	{
+            		// Integrity error.
+            	}
+        	}
         }
         else
         {

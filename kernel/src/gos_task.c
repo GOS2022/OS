@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_task.c
 //! @author     Ahmed Gazar
-//! @date       2024-06-13
-//! @version    1.2
+//! @date       2025-04-06
+//! @version    1.3
 //!
 //! @brief      GOS task source.
 //! @details    For a more detailed description of this module, please refer to @ref gos_kernel.h
@@ -27,6 +27,7 @@
 // 1.0        2023-11-06    Ahmed Gazar     Initial version created.
 // 1.1        2024-04-19    Ahmed Gazar     *    Task register task CPU limit range check fixed
 // 1.2        2024-06-13    Ahmed Gazar     +    gos_taskGetNumber added
+// 1.3        2025-04-06    Ahmed Gazar     *    gos_taskCheckDescriptor check logic inverted
 //*************************************************************************************************
 //
 // Copyright (c) 2023 Ahmed Gazar
@@ -76,6 +77,7 @@ GOS_STATIC gos_taskIdleHook_t kernelIdleHookFunction       = NULL;
  */
 GOS_EXTERN u8_t               inIsr;
 GOS_EXTERN u32_t              currentTaskIndex;
+GOS_EXTERN bool_t             isKernelRunning;
 
 /*
  * Function prototypes
@@ -289,37 +291,44 @@ GOS_INLINE gos_result_t gos_taskSleep (gos_taskSleepTick_t sleepTicks)
     /*
      * Function code.
      */
-    if (currentTaskIndex > 0u)
+    if (isKernelRunning == GOS_FALSE)
     {
-        GOS_ATOMIC_ENTER
+    	gos_kernelDelayMs(sleepTicks);
+    }
+    else
+    {
+        if (currentTaskIndex > 0u)
         {
-            if (taskDescriptors[currentTaskIndex].taskState == GOS_TASK_READY)
+            GOS_ATOMIC_ENTER
             {
-                taskDescriptors[currentTaskIndex].taskState            = GOS_TASK_SLEEPING;
-                taskDescriptors[currentTaskIndex].taskSleepTicks       = sleepTicks;
-                taskDescriptors[currentTaskIndex].taskSleepTickCounter = 0u;
-                taskSleepResult = GOS_SUCCESS;
+                if (taskDescriptors[currentTaskIndex].taskState == GOS_TASK_READY)
+                {
+                    taskDescriptors[currentTaskIndex].taskState            = GOS_TASK_SLEEPING;
+                    taskDescriptors[currentTaskIndex].taskSleepTicks       = sleepTicks;
+                    taskDescriptors[currentTaskIndex].taskSleepTickCounter = 0u;
+                    taskSleepResult = GOS_SUCCESS;
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
+            GOS_ATOMIC_EXIT
+
+            if (taskSleepResult == GOS_SUCCESS)
+            {
+                // Unprivileged.
+                gos_kernelReschedule(GOS_UNPRIVILEGED);
             }
             else
             {
                 // Nothing to do.
             }
         }
-        GOS_ATOMIC_EXIT
-
-        if (taskSleepResult == GOS_SUCCESS)
-        {
-            // Unprivileged.
-            gos_kernelReschedule(GOS_UNPRIVILEGED);
-        }
         else
         {
-            // Nothing to do.
+            // Idle task cannot sleep.
         }
-    }
-    else
-    {
-        // Idle task cannot sleep.
     }
 
     return taskSleepResult;
@@ -1281,20 +1290,20 @@ GOS_STATIC gos_result_t gos_taskCheckDescriptor (gos_taskDescriptor_t* taskDescr
     /*
      * Local variables.
      */
-    gos_result_t taskDescCheckResult = GOS_SUCCESS;
+    gos_result_t taskDescCheckResult = GOS_ERROR;
 
     /*
      * Function code.
      */
-    if (taskDescriptor->taskFunction == NULL                    ||
-        taskDescriptor->taskPrivilegeLevel == 0                 ||
-        taskDescriptor->taskPriority > GOS_TASK_MAX_PRIO_LEVELS ||
-        taskDescriptor->taskFunction == gos_idleTask      ||
-        taskDescriptor->taskStackSize > CFG_TASK_MAX_STACK_SIZE ||
-        taskDescriptor->taskStackSize < CFG_TASK_MIN_STACK_SIZE ||
-        taskDescriptor->taskStackSize % 4 != 0u)
+    if (taskDescriptor->taskFunction != NULL                     &&
+        taskDescriptor->taskPrivilegeLevel != 0                  &&
+        taskDescriptor->taskPriority <= GOS_TASK_MAX_PRIO_LEVELS &&
+        taskDescriptor->taskFunction != gos_idleTask             &&
+        taskDescriptor->taskStackSize <= CFG_TASK_MAX_STACK_SIZE &&
+        taskDescriptor->taskStackSize >= CFG_TASK_MIN_STACK_SIZE  &&
+        taskDescriptor->taskStackSize % 4 == 0u)
     {
-        taskDescCheckResult = GOS_ERROR;
+        taskDescCheckResult = GOS_SUCCESS;
     }
     else
     {

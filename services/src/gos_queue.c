@@ -149,7 +149,7 @@ gos_result_t gos_queueInit (void_t)
     /*
      * Local variables.
      */
-    gos_result_t     queueInitResult   = GOS_SUCCESS;
+    gos_result_t     queueInitResult   = GOS_ERROR;
     gos_queueIndex_t queueIndex        = 0u;
     gos_queueIndex_t queueElementIndex = 0u;
 

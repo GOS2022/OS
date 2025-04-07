@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_trace.c
 //! @author     Ahmed Gazar
-//! @date       2024-03-08
-//! @version    1.12
+//! @date       2025-04-06
+//! @version    1.13
 //!
 //! @brief      GOS trace service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_trace.h
@@ -40,6 +40,8 @@
 // 1.10       2023-09-14    Ahmed Gazar     +    Mutex initialization result processing added
 // 1.11       2023-10-04    Ahmed Gazar     *    Trace timestamp: milliseconds added
 // 1.12       2024-03-08    Ahmed Gazar     -    GOS_TRACE_DAEMON_POLL_TIME_MS removed
+// 1.13       2025-04-06    Ahmed Gazar     *    Initializer result logic inverted
+//                                          *    GOS_CONCAT_RESULT usage added
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -82,7 +84,7 @@
 /**
  * Trace timestamp length.
  */
-#define GOS_TRACE_TIMESTAMP_LENGTH       ( 44u )
+#define GOS_TRACE_TIMESTAMP_LENGTH       ( 46u )
 
 /**
  * Timeout value in [ms] for queue operations.
@@ -152,18 +154,18 @@ gos_result_t gos_traceInit (void_t)
     /*
      * Local variables.
      */
-    gos_result_t traceInitResult = GOS_SUCCESS;
+    gos_result_t traceInitResult = GOS_ERROR;
 
     /*
      * Function code.
      */
     // Create trace queue and register trace daemon task.
-    if (gos_queueCreate(&traceQueue)                 != GOS_SUCCESS ||
-        gos_taskRegister(&traceDaemonTaskDesc, NULL) != GOS_SUCCESS ||
-        gos_mutexInit(&traceMutex) != GOS_SUCCESS
+    if (gos_queueCreate(&traceQueue)                 == GOS_SUCCESS &&
+        gos_taskRegister(&traceDaemonTaskDesc, NULL) == GOS_SUCCESS &&
+        gos_mutexInit(&traceMutex) == GOS_SUCCESS
         )
     {
-        traceInitResult = GOS_ERROR;
+        traceInitResult = GOS_SUCCESS;
     }
 
     return traceInitResult;
@@ -179,9 +181,9 @@ GOS_INLINE gos_result_t gos_traceTrace (bool_t addTimeStamp, char_t* traceMessag
      */
     gos_result_t             traceResult    = GOS_ERROR;
     gos_tid_t                callerTaskId   = GOS_INVALID_TASK_ID;
+    gos_taskPrivilegeLevel_t privileges     = 0u;
     gos_taskDescriptor_t     callerTaskDesc = {0};
     gos_time_t               sysTime        = {0};
-    gos_taskPrivilegeLevel_t privileges     = 0u;
 
     /*
      * Function code.
@@ -199,7 +201,7 @@ GOS_INLINE gos_result_t gos_traceTrace (bool_t addTimeStamp, char_t* traceMessag
 
         if (addTimeStamp == GOS_TRUE)
         {
-            traceResult &= gos_timeGet(&sysTime);
+        	GOS_CONCAT_RESULT(traceResult, gos_timeGet(&sysTime));
             (void_t) sprintf(timeStampBuffer, GOS_TRACE_TIMESTAMP_FORMAT,
                     sysTime.years,
                     sysTime.months,
@@ -210,12 +212,12 @@ GOS_INLINE gos_result_t gos_traceTrace (bool_t addTimeStamp, char_t* traceMessag
                     sysTime.milliseconds
                     );
             // Add timestamp to queue.
-            traceResult &= gos_queuePut(
+            GOS_CONCAT_RESULT(traceResult, gos_queuePut(
                     traceQueue.queueId,
                     (void_t*)timeStampBuffer,
                     strlen(timeStampBuffer) + 1,
                     GOS_TRACE_QUEUE_TMO_MS
-                    );
+                    ));
         }
         else
         {
@@ -223,21 +225,12 @@ GOS_INLINE gos_result_t gos_traceTrace (bool_t addTimeStamp, char_t* traceMessag
         }
 
         // Add trace message to queue.
-        traceResult &= gos_queuePut(
+        GOS_CONCAT_RESULT(traceResult, gos_queuePut(
                 traceQueue.queueId,
                 (void_t*)traceMessage,
                 strlen(traceMessage) + 1,
                 GOS_TRACE_QUEUE_TMO_MS
-                );
-
-        if (traceResult != GOS_SUCCESS)
-        {
-            traceResult = GOS_ERROR;
-        }
-        else
-        {
-            // Nothing to do.
-        }
+                ));
 
         GOS_ATOMIC_ENTER
 
@@ -295,7 +288,7 @@ gos_result_t gos_traceTraceFormatted (bool_t addTimeStamp, GOS_CONST char_t* tra
     {
         if (addTimeStamp == GOS_TRUE)
         {
-            traceResult &= gos_timeGet(&sysTime);
+        	GOS_CONCAT_RESULT(traceResult, gos_timeGet(&sysTime));
             (void_t) sprintf(timeStampBuffer, GOS_TRACE_TIMESTAMP_FORMAT,
                     sysTime.years,
                     sysTime.months,
@@ -306,12 +299,12 @@ gos_result_t gos_traceTraceFormatted (bool_t addTimeStamp, GOS_CONST char_t* tra
                     sysTime.milliseconds
                     );
             // Add timestamp to queue.
-            traceResult &= gos_queuePut(
+            GOS_CONCAT_RESULT(traceResult, gos_queuePut(
                     traceQueue.queueId,
                     (void_t*)timeStampBuffer,
                     strlen(timeStampBuffer) + 1,
                     GOS_TRACE_QUEUE_TMO_MS
-                    );
+                    ));
         }
         else
         {
@@ -322,21 +315,12 @@ gos_result_t gos_traceTraceFormatted (bool_t addTimeStamp, GOS_CONST char_t* tra
         va_start(args, traceFormat);
         (void_t) vsprintf(formattedBuffer, traceFormat, args);
         va_end(args);
-        traceResult &= gos_queuePut(
+        GOS_CONCAT_RESULT(traceResult, gos_queuePut(
                 traceQueue.queueId,
                 (void_t*)formattedBuffer,
                 strlen(formattedBuffer) + 1,
                 GOS_TRACE_QUEUE_TMO_MS
-                );
-
-        if (traceResult != GOS_SUCCESS)
-        {
-            traceResult = GOS_ERROR;
-        }
-        else
-        {
-            // Nothing to do.
-        }
+                ));
 
         GOS_ATOMIC_ENTER
 

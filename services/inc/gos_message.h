@@ -153,7 +153,7 @@ gos_result_t gos_messageInit (
  *          The caller will be unblocked if the message is received or the timeout elapsed.
  *
  * @param   messageIdArray : Array of messages IDs the function should receive. Must be
- *                           by a 0 element!
+ *                           terminated by a 0 element!
  * @param   target         : Pointer to the target message structure. Received data
  *                           will be placed here.
  * @param   tmo            : Timeout value in [ms]. The resolution of timeout is 10ms!

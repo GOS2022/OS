@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos.c
 //! @author     Ahmed Gazar
-//! @date       2023-07-12
-//! @version    1.9
+//! @date       2025-04-06
+//! @version    1.10
 //!
 //! @brief      GOS source.
 //! @details    For a more detailed description of this service, please refer to @ref gos.h
@@ -40,6 +40,8 @@
 //                                          +    GOS_SYS_TASK_SLEEP_TIME added
 // 1.8        2023-06-28    Ahmed Gazar     +    Dump ready signal invoking added
 // 1.9        2023-07-12    Ahmed Gazar     +    gos_sysmonInit added to initializers
+// 1.10       2025-04-06    Ahmed Gazar     *    GOS_CONCAT_RESULT usage added
+//                                          *    Sleep removed from system task dump handling
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -221,12 +223,12 @@ void_t gos_Dump (void_t)
     if ((privileges & GOS_PRIV_TASK_MANIPULATE) != GOS_PRIV_TASK_MANIPULATE)
     {
         (void_t) gos_taskAddPrivilege(currentTaskId, GOS_PRIV_TASK_MANIPULATE);
-        gos_taskWakeup(systemTaskId);
+        (void_t) gos_taskWakeup(systemTaskId);
         (void_t) gos_taskRemovePrivilege(currentTaskId, GOS_PRIV_TASK_MANIPULATE);
     }
     else
     {
-        gos_taskWakeup(systemTaskId);
+        (void_t) gos_taskWakeup(systemTaskId);
     }
 
     (void_t) gos_shellSuspend();
@@ -313,17 +315,7 @@ GOS_STATIC void_t gos_systemTask (void_t)
     // Loop through the initializers and call them while tracing the results.
     for (initIndex = 0u; initIndex < sizeof(initializers) / sizeof(gos_initStruct_t); initIndex++)
     {
-        sysInitResult &= gos_errorTraceInit(initializers[initIndex].initDesc, initializers[initIndex].initFunc());
-    }
-
-    // Check and correct flag value.
-    if (sysInitResult != GOS_SUCCESS)
-    {
-        sysInitResult = GOS_ERROR;
-    }
-    else
-    {
-        // Nothing to do.
+    	GOS_CONCAT_RESULT(sysInitResult, gos_errorTraceInit(initializers[initIndex].initDesc, initializers[initIndex].initFunc()));
     }
 
     // Trace overall result.
@@ -342,7 +334,6 @@ GOS_STATIC void_t gos_systemTask (void_t)
 
         if (dumpRequired == GOS_TRUE)
         {
-            (void_t) gos_taskSleep(100);
             gos_kernelDump();
             gos_queueDump();
 

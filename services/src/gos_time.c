@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_time.c
 //! @author     Ahmed Gazar
-//! @date       2023-10-04
-//! @version    1.7
+//! @date       2025-04-06
+//! @version    1.8
 //!
 //! @brief      GOS time service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_time.h
@@ -39,6 +39,7 @@
 //                                               systick-based and measured in milliseconds (system
 //                                               runtime as well)
 //                                          +    gos_timeAddMilliseconds added
+// 1.8        2025-04-06    Ahmed Gazar     *    Initializer result logic inverted
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -161,16 +162,16 @@ gos_result_t gos_timeInit (void_t)
     /*
      * Local variables.
      */
-    gos_result_t timeInitResult = GOS_SUCCESS;
+    gos_result_t timeInitResult = GOS_ERROR;
 
     /*
      * Function code.
      */
-    if (gos_signalCreate(&timeSignalId)                          != GOS_SUCCESS ||
-        gos_taskRegister(&timeDaemonTaskDesc, &timeDaemonTaskId) != GOS_SUCCESS
+    if (gos_signalCreate(&timeSignalId)                          == GOS_SUCCESS &&
+        gos_taskRegister(&timeDaemonTaskDesc, &timeDaemonTaskId) == GOS_SUCCESS
         )
     {
-        timeInitResult = GOS_ERROR;
+        timeInitResult = GOS_SUCCESS;
     }
     else
     {

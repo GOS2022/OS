@@ -117,6 +117,7 @@ gos_result_t gos_gcpRegisterPhysicalDriver (
  * @param   messageId       : Message ID.
  * @param   pMessagePayload : Pointer to the message payload.
  * @param   payloadSize     : Size of the payload (in bytes).
+ * @param   maxChunkSize    : Maximum size of payload chunks.
  *
  * @return  Result of message transmission.
  *
@@ -127,7 +128,8 @@ gos_result_t gos_gcpTransmitMessage (
         gos_gcpChannelNumber_t  channel,
         u16_t                   messageId,
         void_t*                 pMessagePayload,
-        u16_t                   payloadSize
+        u16_t                   payloadSize,
+		u16_t                   maxChunkSize
         );
 
 /**
@@ -138,6 +140,7 @@ gos_result_t gos_gcpTransmitMessage (
  * @param   pMessageId     : Pointer to a variable to store the message ID.
  * @param   pPayloadTarget : Pointer to the payload target buffer.
  * @param   targetSize     : Size of the target buffer (in bytes).
+ * @param   maxChunkSize    : Maximum size of payload chunks.
  *
  * @return  Result of message reception.
  *
@@ -148,6 +151,7 @@ gos_result_t gos_gcpReceiveMessage (
         gos_gcpChannelNumber_t  channel,
         u16_t*                  pMessageId,
         void_t*                 pPayloadTarget,
-        u16_t                   targetSize
+        u16_t                   targetSize,
+		u16_t                   maxChunkSize
         );
 #endif

@@ -9,17 +9,16 @@ a custom test environment.
 
 # Content
 The repository currently contains the latest stable version of the OS.
-Only the source code of the OS is published at the moment. The test project
-will be published later.
+Only the source code of the OS is published at the moment.
 
 The OS, besides the task scheduler and basic functionalities, contains
-several kinds of synchronization solutions and services. Documentation of the OS
-will be published later.
+several kinds of synchronization solutions and services. For more details, please refer
+to the OS documentations.
 
 # Remarks
 Contribution to this project is encouraged and appriciated.
-If you have any questions or ideas, feel free to contact me: gaborr97@gmail.com
+If you have any questions or ideas, feel free to contact me: ahmedibrahim.gazar97@gmail.com
 
-Current OS version: 0.11
-Last updated: 2024-07-18
+Current OS version: 1.1
+Last updated: 2025-07-04
 (c) 2023, Ahmed Gazar

@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_message.c
 //! @author     Ahmed Gazar
-//! @date       2023-11-01
-//! @version    1.9
+//! @date       2025-04-06
+//! @version    1.10
 //!
 //! @brief      GOS message service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_message.h
@@ -42,6 +42,7 @@
 //                                               is waiting for multiple messages
 // 1.8        2023-09-14    Ahmed Gazar     +    Mutex initialization result processing added
 // 1.9        2023-11-01    Ahmed Gazar     +    Mutex unlock return value void casts added
+// 1.10       2025-04-06    Ahmed Gazar     *    Initializer result logic inverted
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -151,7 +152,7 @@ gos_result_t gos_messageInit (void_t)
     /*
      * Local variables.
      */
-    gos_result_t             messageInitResult  = GOS_SUCCESS;
+    gos_result_t             messageInitResult  = GOS_ERROR;
     gos_messageIndex_t       messageIndex       = 0u;
     gos_messageWaiterIndex_t messageWaiterIndex = 0u;
 
@@ -173,10 +174,10 @@ gos_result_t gos_messageInit (void_t)
     }
 
     // Initialize message mutex, and register message daemon task.
-    if (gos_mutexInit(&messageMutex) != GOS_SUCCESS ||
-        gos_taskRegister(&messageDaemonTaskDesc, &messageDaemonTaskId) != GOS_SUCCESS)
+    if (gos_mutexInit(&messageMutex) == GOS_SUCCESS &&
+        gos_taskRegister(&messageDaemonTaskDesc, &messageDaemonTaskId) == GOS_SUCCESS)
     {
-        messageInitResult = GOS_ERROR;
+        messageInitResult = GOS_SUCCESS;
     }
     else
     {

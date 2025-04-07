@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_kernel.h
 //! @author     Ahmed Gazar
-//! @date       2024-06-13
-//! @version    1.21
+//! @date       2025-03-22
+//! @version    1.22
 //!
 //! @brief      GOS kernel header.
 //! @details    The GOS kernel is the core of the GOS system. It contains the basic type
@@ -83,6 +83,8 @@
 //                                          -    taskIdEx removed from task descriptor structure
 // 1.20       2024-02-27    Ahmed Gazar     +    GOS_CONCAT_RESULT added
 // 1.21       2024-06-13    Ahmed Gazar     +    gos_taskGetNumber added
+// 1.22       2025-03-22    Ahmed Gazar     +    gos_preResetHook_t added
+//                                          +    gos_kernelRegisterPreResetHook() added
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -322,7 +324,7 @@
 #define GOS_CONCAT_RESULT(finalResult, currentResult)    {                                     \
                                                              if (finalResult == GOS_SUCCESS)   \
                                                              {                                 \
-                                                                  finalResult = currentResult; \
+                                                                 finalResult = currentResult;  \
                                                              }                                 \
                                                              else                              \
                                                              {                                 \
@@ -415,6 +417,7 @@ typedef void_t    (*gos_taskUnblockHook_t )(gos_tid_t             );    //!< Tas
 typedef void_t    (*gos_taskDeleteHook_t  )(gos_tid_t             );    //!< Task delete hook type.
 typedef void_t    (*gos_sysTickHook_t     )(void_t                );    //!< System tick hook type.
 typedef void_t    (*gos_privilegedHook_t  )(void_t                );    //!< Privileged mode hook type.
+typedef void_t    (*gos_preResetHook_t    )(void_t                );    //!< Kernel pre-reset hook type.
 
 /**
  *  Result type enumerator.
@@ -995,6 +998,22 @@ gos_result_t gos_kernelRegisterSysTickHook (
  */
 gos_result_t gos_kernelRegisterPrivilegedHook (
         gos_privilegedHook_t privilegedHookFunction
+        );
+
+/**
+ * @brief   Registers a pre-reset hook function.
+ * @details Checks if a hook function has already been registered, and,
+ *          if not, it registers the new hook function.
+ *
+ * @param   preResetHookFunction : Pre-reset hook function.
+ *
+ * @return  Result of registration.
+ *
+ * @retval  GOS_SUCCESS : Registration successful.
+ * @retval  GOS_ERROR   : Registration failed (hook function already exists or parameter is NULL).
+ */
+gos_result_t gos_kernelRegisterPreResetHook (
+		gos_preResetHook_t preResetHookFunction
         );
 
 /**

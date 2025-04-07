@@ -36,10 +36,6 @@
 /*
  * Macros
  */
-/**
- * Overconfiguration macro.
- */
-#define GOS_CFG_OVERCONFIG
 /*
  * Supported target CPU list.
  */
@@ -75,7 +71,7 @@
 /**
  * Maximum number of tasks.
  */
-#define CFG_TASK_MAX_NUMBER             ( 18 )
+#define CFG_TASK_MAX_NUMBER             ( 16 )
 
 /*
  * OS task stack sizes.
@@ -95,15 +91,11 @@
 /**
  * System task stack size.
  */
-#define CFG_SYSTEM_TASK_STACK_SIZE      ( 0x400 )
+#define CFG_SYSTEM_TASK_STACK_SIZE      ( 0x800 )
 /**
  * Signal daemon task stack size.
  */
-#define CFG_TASK_SIGNAL_DAEMON_STACK    ( 0x300 )
-/**
- * Process daemon task stack size.
- */
-#define CFG_TASK_PROC_DAEMON_STACK      ( 0x300 )
+#define CFG_TASK_SIGNAL_DAEMON_STACK    ( 0x400 )
 /**
  * Time daemon task stack size.
  */
@@ -123,7 +115,7 @@
 /**
  * Sysmon daemon task stack size.
  */
-#define CFG_TASK_SYSMON_DAEMON_STACK    ( 0x400 )
+#define CFG_TASK_SYSMON_DAEMON_STACK    ( 0x800 )
 
 /*
  * OS task priorities.
@@ -140,10 +132,6 @@
  * Signal daemon task priority.
  */
 #define CFG_TASK_SIGNAL_DAEMON_PRIO     ( 197 )
-/**
- * Process daemon task priority.
- */
-#define CFG_TASK_PROC_DAEMON_PRIO       ( 194 )
 /**
  * Shell daemon task priority.
  */
@@ -162,30 +150,6 @@
 #define CFG_TASK_SYSMON_DAEMON_PRIO     ( 191 )
 
 /*
- * Process service parameters.
- */
-/**
- * Process service use flag.
- */
-#define CFG_PROC_USE_SERVICE            ( 0 )
-/**
- * Maximum process priority levels.
- */
-#define CFG_PROC_MAX_PRIO_LEVELS        ( UINT8_MAX )
-/**
- * Idle process priority.
- */
-#define CFG_PROC_IDLE_PRIO              ( CFG_PROC_MAX_PRIO_LEVELS )
-/**
- * Maximum process name length.
- */
-#define CFG_PROC_MAX_NAME_LENGTH        ( 24 )
-/**
- * Maximum number of processes.
- */
-#define CFG_PROC_MAX_NUMBER             ( 4 )
-
-/*
  * Queue service parameters.
  */
 /**
@@ -195,7 +159,7 @@
 /**
  * Maximum number of queue elements.
  */
-#define CFG_QUEUE_MAX_ELEMENTS          ( 40 )
+#define CFG_QUEUE_MAX_ELEMENTS          ( 30 )
 /**
  * Maximum queue length.
  */
@@ -228,7 +192,7 @@
 /**
  * Maximum number of messages handled at once.
  */
-#define CFG_MESSAGE_MAX_NUMBER          ( 4 )
+#define CFG_MESSAGE_MAX_NUMBER          ( 16 )
 /**
  * Maximum length of a message in bytes.
  */
@@ -236,15 +200,11 @@
 /**
  * Maximum number of message waiters.
  */
-#define CFG_MESSAGE_MAX_WAITERS         ( 10 )
+#define CFG_MESSAGE_MAX_WAITERS         ( 16 )
 /**
  * Maximum number of message IDs a task can wait for (includes the terminating 0).
  */
 #define CFG_MESSAGE_MAX_WAITER_IDS      ( 8 )
-/**
- * Maximum number of message addressees.
- */
-#define CFG_MESSAGE_MAX_ADDRESSEES      ( 8 )
 
 /*
  * Shell service parameters.
@@ -252,11 +212,11 @@
 /**
  * Shell service use flag.
  */
-#define CFG_SHELL_USE_SERVICE           ( 1 )
+#define CFG_SHELL_USE_SERVICE           ( 0 )
 /**
  * Maximum number of shell commands.
  */
-#define CFG_SHELL_MAX_COMMAND_NUMBER    ( 16 )
+#define CFG_SHELL_MAX_COMMAND_NUMBER    ( 8 )
 /**
  * Maximum command length.
  */
@@ -264,11 +224,15 @@
 /**
  * Maximum parameters length.
  */
-#define CFG_SHELL_MAX_PARAMS_LENGTH     ( 128 )
+#define CFG_SHELL_MAX_PARAMS_LENGTH     ( 64 )
 /**
  * Command buffer size.
  */
 #define CFG_SHELL_COMMAND_BUFFER_SIZE   ( 200 )
+/**
+ * Shell daemon startup delay time [ms].
+ */
+#define CFG_SHELL_STARTUP_DELAY_MS      ( 500 )
 
 /*
  * GCP service parameters.
@@ -276,7 +240,7 @@
 /**
  * GCP maximum number of channels.
  */
-#define CFG_GCP_CHANNELS_MAX_NUMBER     ( 2 )
+#define CFG_GCP_CHANNELS_MAX_NUMBER     ( 1 )
 
 /*
  * Trace service parameters.
@@ -292,7 +256,7 @@
 /**
  * Sysmon use service flag.
  */
-#define CFG_SYSMON_USE_SERVICE          ( 0 )
+#define CFG_SYSMON_USE_SERVICE          ( 1 )
 
 /**
  * Define sysmon GCP channel number.
@@ -302,7 +266,7 @@
 /**
  * Maximum number of user messages.
  */
-#define CFG_SYSMON_MAX_USER_MESSAGES    ( 6 )
+#define CFG_SYSMON_MAX_USER_MESSAGES    ( 24 )
 
 /*
  * Error handling parameters.
