@@ -59,8 +59,8 @@
  * @brief   Calculates the 32-bit CRC value of the given data buffer.
  * @details Calculates the 32-bit CRC value of the given data buffer.
  *
- * @param   pData    : Pointer to the data buffer.
- * @param   dataSize : Size of the data buffer in bytes.
+ * @param[in] pData    Pointer to the data buffer.
+ * @param[in] dataSize Size of the data buffer in bytes.
  *
  * @return  32-bit CRC value.
  */

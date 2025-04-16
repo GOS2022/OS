@@ -895,7 +895,7 @@ gos_result_t gos_kernelSetMaxCpuLoad (u16_t maxCpuLoad)
 /*
  * Function: gos_kernelGetMaxCpuLoad
  */
-gos_result_t gos_kernelGetMaxCpuLoad (u16_t* maxCpuLoad)
+gos_result_t gos_kernelGetMaxCpuLoad (u16_t* pMaxCpuLoad)
 {
     /*
      * Local variables.
@@ -905,9 +905,9 @@ gos_result_t gos_kernelGetMaxCpuLoad (u16_t* maxCpuLoad)
     /*
      * Function code.
      */
-    if (maxCpuLoad != NULL)
+    if (pMaxCpuLoad != NULL)
     {
-        *maxCpuLoad = cpuUseLimit;
+        *pMaxCpuLoad = cpuUseLimit;
         getMaxCpuLoadResult = GOS_SUCCESS;
     }
     else
@@ -1056,7 +1056,7 @@ GOS_UNUSED GOS_STATIC u32_t gos_kernelGetCurrentPsp (void_t)
  * @brief   Saves the current PSP.
  * @details Saves the current PSP.
  *
- * @param   psp : Current PSP value.
+ * @param[in] psp Current PSP value.
  *
  * @return    -
  */
@@ -1200,7 +1200,7 @@ GOS_UNUSED GOS_STATIC void_t gos_kernelSelectNextTask (void_t)
  * @details Based on the task state it returns a string with a printable form
  *          of the task state.
  *
- * @param   taskState : The task state variable to be translated.
+ * @param[in] taskState The task state variable to be translated.
  *
  * @return  String with the task state.
  */
@@ -1214,19 +1214,19 @@ GOS_STATIC char_t* gos_kernelGetTaskStateString (gos_taskState_t taskState)
         case GOS_TASK_READY:
         {
             return TRACE_FG_GREEN_START"ready"TRACE_FORMAT_RESET;
-        }break;
+        }
         case GOS_TASK_SLEEPING:
         {
             return TRACE_FG_YELLOW_START"sleeping"TRACE_FORMAT_RESET;
-        }break;
+        }
         case GOS_TASK_SUSPENDED:
         {
             return TRACE_FG_MAGENTA_START"suspended"TRACE_FORMAT_RESET;
-        }break;
+        }
         case GOS_TASK_BLOCKED:
         {
             return TRACE_FG_CYAN_START"blocked"TRACE_FORMAT_RESET;
-        }break;
+        }
         case GOS_TASK_ZOMBIE:
         {
             return TRACE_FG_RED_START"zombie"TRACE_FORMAT_RESET;

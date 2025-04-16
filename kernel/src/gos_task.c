@@ -969,7 +969,7 @@ GOS_INLINE gos_result_t gos_taskSetPrivileges (gos_tid_t taskId, gos_taskPrivile
 /*
  * Function: gos_taskGetPrivileges
  */
-GOS_INLINE gos_result_t gos_taskGetPrivileges (gos_tid_t taskId, gos_taskPrivilegeLevel_t* privileges)
+GOS_INLINE gos_result_t gos_taskGetPrivileges (gos_tid_t taskId, gos_taskPrivilegeLevel_t* pPrivileges)
 {
     /*
      * Local variables.
@@ -982,11 +982,11 @@ GOS_INLINE gos_result_t gos_taskGetPrivileges (gos_tid_t taskId, gos_taskPrivile
      */
     GOS_ATOMIC_ENTER
     if (taskId > GOS_DEFAULT_TASK_ID && (taskId - GOS_DEFAULT_TASK_ID) < CFG_TASK_MAX_NUMBER &&
-        privileges != NULL)
+    		pPrivileges != NULL)
     {
         taskIndex = (u32_t)(taskId - GOS_DEFAULT_TASK_ID);
 
-        *privileges = taskDescriptors[taskIndex].taskPrivilegeLevel;
+        *pPrivileges = taskDescriptors[taskIndex].taskPrivilegeLevel;
         taskGetPrivilegesResult = GOS_SUCCESS;
     }
     else
@@ -1049,7 +1049,7 @@ gos_result_t gos_taskGetName (gos_tid_t taskId, gos_taskName_t taskName)
 /*
  * Function: gos_taskGetId
  */
-gos_result_t gos_taskGetId (gos_taskName_t taskName, gos_tid_t* taskId)
+gos_result_t gos_taskGetId (gos_taskName_t taskName, gos_tid_t* pTaskId)
 {
     /*
      * Local variables.
@@ -1060,11 +1060,11 @@ gos_result_t gos_taskGetId (gos_taskName_t taskName, gos_tid_t* taskId)
     /*
      * Function code.
      */
-    for (taskIndex = 0u; taskIndex < CFG_TASK_MAX_NUMBER && taskId != NULL; taskIndex++)
+    for (taskIndex = 0u; taskIndex < CFG_TASK_MAX_NUMBER && pTaskId != NULL; taskIndex++)
     {
         if (strcmp(taskName, taskDescriptors[taskIndex].taskName) == 0u)
         {
-            *taskId = taskDescriptors[taskIndex].taskId;
+            *pTaskId = taskDescriptors[taskIndex].taskId;
             taskGetIdResult = GOS_SUCCESS;
             break;
         }
@@ -1080,7 +1080,7 @@ gos_result_t gos_taskGetId (gos_taskName_t taskName, gos_tid_t* taskId)
 /*
  * Function: gos_taskGetCurrentId
  */
-GOS_INLINE gos_result_t gos_taskGetCurrentId (gos_tid_t* taskId)
+GOS_INLINE gos_result_t gos_taskGetCurrentId (gos_tid_t* pTaskId)
 {
     /*
      * Local variables.
@@ -1091,9 +1091,9 @@ GOS_INLINE gos_result_t gos_taskGetCurrentId (gos_tid_t* taskId)
      * Function code.
      */
     GOS_ATOMIC_ENTER
-    if (taskId != NULL)
+    if (pTaskId != NULL)
     {
-        *taskId = (gos_tid_t)(GOS_DEFAULT_TASK_ID + currentTaskIndex);
+        *pTaskId = (gos_tid_t)(GOS_DEFAULT_TASK_ID + currentTaskIndex);
         taskGetCurrentIdResult = GOS_SUCCESS;
     }
     else
@@ -1108,7 +1108,7 @@ GOS_INLINE gos_result_t gos_taskGetCurrentId (gos_tid_t* taskId)
 /*
  * Function: gos_taskGetData
  */
-gos_result_t gos_taskGetData (gos_tid_t taskId, gos_taskDescriptor_t* taskData)
+gos_result_t gos_taskGetData (gos_tid_t taskId, gos_taskDescriptor_t* pTaskData)
 {
     /*
      * Local variables.
@@ -1121,11 +1121,11 @@ gos_result_t gos_taskGetData (gos_tid_t taskId, gos_taskDescriptor_t* taskData)
      */
     GOS_ATOMIC_ENTER
     if (taskId >= GOS_DEFAULT_TASK_ID && (taskId - GOS_DEFAULT_TASK_ID) < CFG_TASK_MAX_NUMBER &&
-        taskData != NULL)
+    		pTaskData != NULL)
     {
         taskIndex = (u32_t)(taskId - GOS_DEFAULT_TASK_ID);
 
-        (void_t) memcpy((void*)taskData, (void*)&taskDescriptors[taskIndex], sizeof(*taskData));
+        (void_t) memcpy((void*)pTaskData, (void*)&taskDescriptors[taskIndex], sizeof(*pTaskData));
 
         taskGetDataResult = GOS_SUCCESS;
     }
@@ -1141,7 +1141,7 @@ gos_result_t gos_taskGetData (gos_tid_t taskId, gos_taskDescriptor_t* taskData)
 /*
  * Function: gos_taskGetDataByIndex
  */
-gos_result_t gos_taskGetDataByIndex (u16_t taskIndex, gos_taskDescriptor_t* taskData)
+gos_result_t gos_taskGetDataByIndex (u16_t taskIndex, gos_taskDescriptor_t* pTaskData)
 {
     /*
      * Local variables.
@@ -1153,10 +1153,10 @@ gos_result_t gos_taskGetDataByIndex (u16_t taskIndex, gos_taskDescriptor_t* task
      */
     GOS_ATOMIC_ENTER
     if (taskIndex < CFG_TASK_MAX_NUMBER &&
-        taskData != NULL &&
+    	pTaskData != NULL &&
         (taskDescriptors[currentTaskIndex].taskPrivilegeLevel & GOS_TASK_PRIVILEGE_KERNEL) == GOS_TASK_PRIVILEGE_KERNEL)
     {
-        (void_t) memcpy((void*)taskData, (void*)&taskDescriptors[taskIndex], sizeof(*taskData));
+        (void_t) memcpy((void*)pTaskData, (void*)&taskDescriptors[taskIndex], sizeof(*pTaskData));
 
         taskGetDataResult = GOS_SUCCESS;
     }
@@ -1269,21 +1269,21 @@ gos_result_t gos_taskSubscribeDeleteSignal (gos_signalHandler_t deleteSignalHand
 
 /**
  * @brief   Checks the validity of the task descriptor.
- * @details It checks the task function pointer, task priority value, stack, and
+ * @details Checks the task function pointer, task priority value, stack, and
  *          size parameters and return with error if the parameters are incorrect.
  *
- * @param   taskDescriptor : Pointer to the task descriptor structure.
+ * @param[in] taskDescriptor Pointer to the task descriptor structure.
  *
  * @return  Result of task descriptor checking.
  *
- * @retval  GOS_SUCCESS    :    Descriptor contains valid data.
- * @retval  GOS_ERROR      :    One or more parameter is invalid:
- *                              - Task function is NULL pointer
- *                              - Task function is the idle task
- *                              - Priority exceeds the maximum priority level
- *                              - Stack size is smaller than the minimum allowed
- *                              - Stack size is greater than the maximum allowed
- *                              - Stack size is not 4-byte aligned
+ * @retval  #GOS_SUCCESS Descriptor contains valid data.
+ * @retval  #GOS_ERROR   One or more parameter is invalid:
+ *                       - Task function is NULL pointer
+ *                       - Task function is the idle task
+ *                       - Priority exceeds the maximum priority level
+ *                       - Stack size is smaller than the minimum allowed
+ *                       - Stack size is greater than the maximum allowed
+ *                       - Stack size is not 4-byte aligned
  */
 GOS_STATIC gos_result_t gos_taskCheckDescriptor (gos_taskDescriptor_t* taskDescriptor)
 {

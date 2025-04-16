@@ -95,8 +95,8 @@ typedef u16_t gos_shellCommandIndex_t;    //!< Shell command index type.
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS : Shell initialization successful.
- * @retval  GOS_ERROR   : Shell daemon task registration failed.
+ * @retval  #GOS_SUCCESS Shell initialization successful.
+ * @retval  #GOS_ERROR   Shell daemon task registration failed.
  */
 gos_result_t gos_shellInit (
         void_t
@@ -106,14 +106,14 @@ gos_result_t gos_shellInit (
  * @brief   This function registers an array of commands in the shell.
  * @details Checks the array pointer and registers the commands one by one.
  *
- * @param   commands    : Pointer to the command structure array to register.
- * @param   arraySize   : Size of the array in bytes.
+ * @param[in] commands  Pointer to the command structure array to register.
+ * @param[in] arraySize Size of the array in bytes.
  *
  * @return  Result of shell command registration.
  *
- * @retval  GOS_SUCCESS : Command registration successful.
- * @retval  GOS_ERROR   : Command function or name is NULL or internal command
- *                        array is full.
+ * @retval  #GOS_SUCCESS Command registration successful.
+ * @retval  #GOS_ERROR   Command function or name is NULL or internal command
+ *                       array is full.
  */
 gos_result_t gos_shellRegisterCommands (
         gos_shellCommand_t* commands,
@@ -125,13 +125,13 @@ gos_result_t gos_shellRegisterCommands (
  * @details Checks the command structure and registers the command in the next
  *          empty slot in the internal command array.
  *
- * @param   command     : Pointer to the command structure to register.
+ * @param[in] command Pointer to the command structure to register.
  *
  * @return  Result of shell command registration.
  *
- * @retval  GOS_SUCCESS : Command registration successful.
- * @retval  GOS_ERROR   : Command function or name is NULL or internal command
- *                        array is full.
+ * @retval  #GOS_SUCCESS Command registration successful.
+ * @retval  #GOS_ERROR   Command function or name is NULL or internal command
+ *                       array is full.
  */
 gos_result_t gos_shellRegisterCommand (
         gos_shellCommand_t* command
@@ -143,8 +143,8 @@ gos_result_t gos_shellRegisterCommand (
  *
  * @return  Result of shell suspension.
  *
- * @retval  GOS_SUCCESS : Shell suspended successfully.
- * @retval  GOS_ERROR   : Task suspension failed.
+ * @retval  #GOS_SUCCESS Shell suspended successfully.
+ * @retval  #GOS_ERROR   Task suspension failed.
  */
 gos_result_t gos_shellSuspend (
         void_t
@@ -156,8 +156,8 @@ gos_result_t gos_shellSuspend (
  *
  * @return  Result of shell resumption.
  *
- * @retval  GOS_SUCCESS : Shell resumed successfully.
- * @retval  GOS_ERROR   : Task resumption failed.
+ * @retval  #GOS_SUCCESS Shell resumed successfully.
+ * @retval  #GOS_ERROR   Task resumption failed.
  */
 gos_result_t gos_shellResume (
         void_t
@@ -169,7 +169,7 @@ gos_result_t gos_shellResume (
  *
  * @return  Result of turning echoing on.
  *
- * @retval  GOS_SUCCESS : Echoing turned on successfully.
+ * @retval  #GOS_SUCCESS Echoing turned on successfully.
  */
 gos_result_t gos_shellEchoOn (
         void_t
@@ -181,7 +181,7 @@ gos_result_t gos_shellEchoOn (
  *
  * @return  Result of turning echoing off.
  *
- * @retval  GOS_SUCCESS : Echoing turned off successfully.
+ * @retval  #GOS_SUCCESS Echoing turned off successfully.
  */
 gos_result_t gos_shellEchoOff (
         void_t

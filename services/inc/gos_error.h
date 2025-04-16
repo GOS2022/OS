@@ -87,11 +87,11 @@ void_t gos_printStartupLogo (void_t);
  * @details Prints the formatted error message on the trace output, and based on the error
  *          level, it returns or stays in an infinite loop and disables scheduling.
  *
- * @param   errorLevel   : Level of error (OS/user, warning/fatal).
- * @param   function     : Function name.
- * @param   line         : Line number.
- * @param   errorMessage : Error message.
- * @param   ...          : Formatter variable arguments.
+ * @param[in] errorLevel   Level of error (OS/user, warning/fatal).
+ * @param[in] function     Function name.
+ * @param[in] line         Line number.
+ * @param[in] errorMessage Error message.
+ * @param[in] ...          Formatter variable arguments.
  *
  * @return  -
  */
@@ -107,8 +107,9 @@ void_t gos_errorHandler (
  * @brief   Traces an initialization message.
  * @details Writes the formatted initialization message on the trace output.
  *
- * @param   initDescription : Message to describe the initialization step.
- * @param   initResult      : Result of initialization.
+ * @param[in] initDescription Message to describe the initialization step.
+ * @param[in] initResult      Result of initialization.
+ *
  * @return  Result of initialization.
  */
 gos_result_t gos_errorTraceInit (

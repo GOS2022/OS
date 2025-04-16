@@ -253,7 +253,7 @@ gos_result_t gos_errorTraceInit (const char_t* initDescription, gos_result_t ini
  * @brief   Converts the result enumerator to a string.
  * @details Returns the formatted string version of the result enumerator.
  *
- * @param   pResult : Pointer to the result variable.
+ * @param[out] pResult Pointer to the result variable.
  *
  * @return  Formatted string.
  */

@@ -136,8 +136,8 @@ typedef struct
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS : Initialization successful.
- * @retval  GOS_ERROR   : Lock creation, task registration or task suspension error.
+ * @retval  #GOS_SUCCESS Initialization successful.
+ * @retval  #GOS_ERROR   Lock creation, task registration or task suspension error.
  */
 gos_result_t gos_queueInit (
         void_t
@@ -148,12 +148,12 @@ gos_result_t gos_queueInit (
  * @details This function loops through the internal queue array and registers the
  *          new queue in the next free slot.
  *
- * @param   pQueueDescriptor : Pointer to queue descriptor variable with queue data.
+ * @param[in, out] pQueueDescriptor Pointer to queue descriptor variable with queue data.
  *
  * @return  Result of queue creation.
  *
- * @retval  GOS_SUCCESS      : Queue creation successful.
- * @retval  GOS_ERROR        : Queue descriptor is NULL pointer or queue array is full.
+ * @retval  #GOS_SUCCESS Queue creation successful.
+ * @retval  #GOS_ERROR   Queue descriptor is NULL pointer or queue array is full.
  */
 gos_result_t gos_queueCreate (
         gos_queueDescriptor_t* pQueueDescriptor
@@ -164,15 +164,15 @@ gos_result_t gos_queueCreate (
  * @details This function checks the queue state and places the given element in the
  *          next queue element.
  *
- * @param   queueId     : Queue ID.
- * @param   element     : Pointer to element.
- * @param   elementSize : Size of element.
- * @param   timeout     : Timeout for locking queue mutex.
+ * @param[in] queueId     Queue ID.
+ * @param[in] element     Pointer to element.
+ * @param[in] elementSize Size of element.
+ * @param[in] timeout     Timeout for locking queue mutex.
  *
  * @return  Result of element putting.
  *
- * @retval  GOS_SUCCESS : Element successfully put in the queue.
- * @retval  GOS_ERROR   : Invalid queue ID, invalid element size or queue is full.
+ * @retval  #GOS_SUCCESS Element successfully put in the queue.
+ * @retval  #GOS_ERROR   Invalid queue ID, invalid element size or queue is full.
  */
 gos_result_t gos_queuePut (
         gos_queueId_t     queueId,     void_t* element,
@@ -183,15 +183,15 @@ gos_result_t gos_queuePut (
  * @brief   This function gets the next element from the given queue.
  * @details This function checks the queue state and gets the next element from the queue.
  *
- * @param   queueId     : Queue ID.
- * @param   target      : Pointer to target variable.
- * @param   targetSize  : Size of target.
- * @param   timeout     : Timeout for locking queue mutex.
+ * @param[in]  queueId    Queue ID.
+ * @param[out] target     Pointer to target variable.
+ * @param[in]  targetSize Size of target.
+ * @param[in]  timeout    Timeout for locking queue mutex.
  *
  * @return  Result of element getting.
  *
- * @retval  GOS_SUCCESS : Element successfully moved from queue to target.
- * @retval  GOS_ERROR   : Invalid queue ID, invalid target size or queue is empty.
+ * @retval  #GOS_SUCCESS Element successfully moved from queue to target.
+ * @retval  #GOS_ERROR   Invalid queue ID, invalid target size or queue is empty.
  */
 gos_result_t gos_queueGet (
         gos_queueId_t     queueId,    void_t* target,
@@ -203,15 +203,15 @@ gos_result_t gos_queueGet (
  * @details This function checks the queue state and returns the next element from the queue
  *          without modifying the queue counters.
  *
- * @param   queueId     : Queue ID.
- * @param   target      : Pointer to target variable.
- * @param   targetSize  : Size of target.
- * @param   timeout     : Timeout for locking queue mutex.
+ * @param[in]  queueId    Queue ID.
+ * @param[out] target     Pointer to target variable.
+ * @param[in]  targetSize Size of target.
+ * @param[in]  timeout    Timeout for locking queue mutex.
  *
  * @return  Result of element getting.
  *
- * @retval  GOS_SUCCESS : Element successfully copied from queue to target.
- * @retval  GOS_ERROR   : Invalid queue ID, invalid target size or queue is empty.
+ * @retval  #GOS_SUCCESS Element successfully copied from queue to target.
+ * @retval  #GOS_ERROR   Invalid queue ID, invalid target size or queue is empty.
  */
 gos_result_t gos_queuePeek (
         gos_queueId_t     queueId,    void_t* target,
@@ -222,12 +222,12 @@ gos_result_t gos_queuePeek (
  * @brief   Resets the given queue.
  * @details Sets the read and write counter to zero, making the queue empty.
  *
- * @param   queueId     : Queue ID.
+ * @param[in] queueId Queue ID.
  *
  * @return  Result of queue resetting.
  *
- * @retval  GOS_SUCCESS : Reset successful.
- * @retval  GOS_ERROR   : Invalid queue ID.
+ * @retval  #GOS_SUCCESS Reset successful.
+ * @retval  #GOS_ERROR   Invalid queue ID.
  */
 gos_result_t gos_queueReset (gos_queueId_t queueId);
 
@@ -236,12 +236,12 @@ gos_result_t gos_queueReset (gos_queueId_t queueId);
  * @details This function checks whether a hook has been already registered, and if not,
  *          it saves the given hook function.
  *
- * @param   fullHook    : Hook function.
+ * @param[in] fullHook Hook function.
  *
  * @return  Result of hook registration.
  *
- * @retval  GOS_SUCCESS : Hook registration successful.
- * @retval  GOS_ERROR   : Hook already exists or parameter is NULL pointer.
+ * @retval  #GOS_SUCCESS Hook registration successful.
+ * @retval  #GOS_ERROR   Hook already exists or parameter is NULL pointer.
  */
 gos_result_t gos_queueRegisterFullHook (
         gos_queueFullHook fullHook
@@ -252,12 +252,12 @@ gos_result_t gos_queueRegisterFullHook (
  * @details This function checks whether a hook has been already registered, and if not,
  *          it saves the given hook function.
  *
- * @param   emptyHook   : Hook function.
+ * @param[in] emptyHook Hook function.
  *
  * @return  Result of hook registration.
  *
- * @retval  GOS_SUCCESS : Hook registration successful.
- * @retval  GOS_ERROR   : Hook already exists or parameter is NULL pointer.
+ * @retval  #GOS_SUCCESS Hook registration successful.
+ * @retval  #GOS_ERROR   Hook already exists or parameter is NULL pointer.
  */
 gos_result_t gos_queueRegisterEmptyHook (
         gos_queueEmptyHook emptyHook
@@ -268,13 +268,13 @@ gos_result_t gos_queueRegisterEmptyHook (
  * @details This function copies the name of the queue belonging to the given ID to
  *          the given variable.
  *
- * @param   queueId     : Queue ID.
- * @param   queueName   : Queue name.
+ * @param[in]  queueId   Queue ID.
+ * @param[out] queueName Queue name.
  *
  * @return  Result of queue name getting.
  *
- * @retval  GOS_SUCCESS : Name getting successful.
- * @retval  GOS_ERROR   : Invalid queue ID or queue name variable is NULL.
+ * @retval  #GOS_SUCCESS Name getting successful.
+ * @retval  #GOS_ERROR   Invalid queue ID or queue name variable is NULL.
  */
 gos_result_t gos_queueGetName (
         gos_queueId_t   queueId,
@@ -286,13 +286,13 @@ gos_result_t gos_queueGetName (
  * @details This function copies the number of elements in the queue belonging to the given ID
  *          to the given variable.
  *
- * @param   queueId       : Queue ID.
- * @param   elementNumber : Pointer to variable to store the element number in.
+ * @param[in]  queueId       Queue ID.
+ * @param[out] elementNumber Pointer to variable to store the element number in.
  *
  * @return  Result of queue element number getting.
  *
- * @retval  GOS_SUCCESS   : Element number getting successful.
- * @retval  GOS_ERROR     : Invalid queue ID or element number variable is NULL.
+ * @retval  #GOS_SUCCESS Element number getting successful.
+ * @retval  #GOS_ERROR   Invalid queue ID or element number variable is NULL.
  */
 gos_result_t gos_queueGetElementNumber (
         gos_queueId_t     queueId,

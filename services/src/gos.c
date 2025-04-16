@@ -265,7 +265,7 @@ __attribute__((weak)) gos_result_t gos_userApplicationInit (void_t)
  *
  * @return  Result of OS starting.
  *
- * @retval  GOS_ERROR : OS not started due to initialization error or kernel start error.
+ * @retval  #GOS_ERROR OS not started due to initialization error or kernel start error.
  *
  * @remark  This function should only return with error. If the initialization is successful,
  *          the function is not expected to return.

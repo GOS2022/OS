@@ -82,12 +82,12 @@ typedef struct
  * @brief   Initializes the kernel drivers.
  * @details Copies the function pointers into the internal structure.
  *
- * @param   pDriverFunctions : Pointer to the function pointer structure.
+ * @param[in] pDriverFunctions Pointer to the function pointer structure.
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS      : Initialization successful.
- * @retval  GOS_ERROR        : NULL pointer parameter.
+ * @retval  #GOS_SUCCESS Initialization successful.
+ * @retval  #GOS_ERROR   NULL pointer parameter.
  */
 gos_result_t gos_driverInit (gos_driver_functions_t* pDriverFunctions);
 

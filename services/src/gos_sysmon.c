@@ -99,6 +99,9 @@ typedef enum
     GOS_SYSMON_MSG_RESET_REQ_ID              = 0x0FFF,   //!< System reset request ID.
 }gos_sysmonMessageId_t;
 
+/**
+ * System monitoring message index enumerator.
+ */
 typedef enum
 {
     GOS_SYSMON_MSG_UNKNOWN                   = 0,        //!< Unknown message LUT index.
@@ -202,6 +205,10 @@ typedef struct __attribute__((packed))
 }gos_sysmonTaskVariableData;
 
 /**
+ * @defgroup SysmonMsgStructs System monitoring message structures
+ * @{
+ */
+/**
  * Ping message structure.
  */
 typedef struct __attribute__((packed))
@@ -286,6 +293,9 @@ typedef struct __attribute__((packed))
 {
     gos_sysmonMessageResult_t messageResult;             //!< Message result.
 }gos_sysmonSystimeSetResultMessage_t;
+/**
+ * @}
+ */
 
 /**
  * Message handler function type.
@@ -686,7 +696,7 @@ GOS_STATIC void_t gos_sysmonDaemonTask (void_t)
  * @brief   Gets the LUT index of the given message.
  * @details Returns the look-up table index that belongs to the given message ID.
  *
- * @param   messageId : ID of the message to get the index for.
+ * @param[in] messageId ID of the message to get the index for.
  *
  * @return  Look-up table index of the message.
  */
@@ -720,7 +730,7 @@ GOS_STATIC gos_sysmonMessageEnum_t gos_sysmonGetLutIndex (gos_sysmonMessageId_t 
  * @details Fills out the remaining transmit header parameters (except for the result field),
  *          and transmits the message with the corresponding payload.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  -
  */
@@ -740,7 +750,7 @@ GOS_STATIC void_t gos_sysmonSendResponse (gos_sysmonMessageEnum_t lutIndex)
  * @brief   Handles the ping request.
  * @details Sends a ping response.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  -
  */
@@ -757,7 +767,7 @@ GOS_STATIC void_t gos_sysmonHandlePingRequest (gos_sysmonMessageEnum_t lutIndex)
  * @brief   Handles the CPU usage get request.
  * @details Sends out the current CPU usage.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  -
  */
@@ -784,7 +794,7 @@ GOS_STATIC void_t gos_sysmonHandleCpuUsageGet (gos_sysmonMessageEnum_t lutIndex)
  * @brief   Handles the task data get request.
  * @details Sends out the static task data for the requested task.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  -
  */
@@ -883,7 +893,7 @@ GOS_STATIC void_t gos_sysmonHandleTaskDataGet (gos_sysmonMessageEnum_t lutIndex)
  * @brief   Handles the task variable data get request.
  * @details Sends out the variable task data related to the request task.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  -
  */
@@ -971,7 +981,7 @@ GOS_STATIC void_t gos_sysmonHandleTaskVariableDataGet (gos_sysmonMessageEnum_t l
  * @brief   Handles the task modification request.
  * @details Performs the requested kind of modification on the requested task.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  -
  */
@@ -1080,7 +1090,7 @@ GOS_STATIC void_t gos_sysmonHandleTaskModification (gos_sysmonMessageEnum_t lutI
  * @brief   Handles the system runtime get request.
  * @details Sends out the total system runtime since startup.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  -
  */
@@ -1114,7 +1124,7 @@ GOS_STATIC void_t gos_sysmonHandleSysRuntimeGet (gos_sysmonMessageEnum_t lutInde
  * @brief   Handles the system time set request.
  * @details Sets the system time to the given value.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  -
  */
@@ -1148,7 +1158,7 @@ GOS_STATIC void_t gos_sysmonHandleSystimeSet (gos_sysmonMessageEnum_t lutIndex)
  * @brief   Handles the system reset request.
  * @details Resets the system.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  -
  */
@@ -1171,13 +1181,13 @@ GOS_STATIC void_t gos_sysmonHandleResetRequest (gos_sysmonMessageEnum_t lutIndex
  * @brief   Checks the high-level message parameters.
  * @details Checks the protocol version and the payload CRC value.
  *
- * @param   lutIndex : Look-up table index of the message.
+ * @param[in] lutIndex Look-up table index of the message.
  *
  * @return  Result of message checking.
  *
- * @retval  GOS_SYSMON_MSG_RES_OK          : Message OK.
- * @retval  GOS_SYSMON_MSG_INV_PV          : Invalid protocol version.
- * @retval  GOS_SYSMON_MSG_INV_PAYLOAD_CRC : Payload CRC mismatch.
+ * @retval  #GOS_SYSMON_MSG_RES_OK          Message OK.
+ * @retval  #GOS_SYSMON_MSG_INV_PV          Invalid protocol version.
+ * @retval  #GOS_SYSMON_MSG_INV_PAYLOAD_CRC Payload CRC mismatch.
  */
 GOS_STATIC gos_sysmonMessageResult_t gos_sysmonCheckMessage (gos_sysmonMessageEnum_t lutIndex)
 {

@@ -290,16 +290,17 @@ gos_result_t gos_gcpReceiveMessage (
  * @details Transmits a message over GCP (header request, payload, and
  *          then receives a response header).
  *
- * @param   channel         : GCP channel number.
- * @param   messageId       : ID of the message.
- * @param   pMessagePayload : Pointer to the payload buffer.
- * @param   payloadSize     : Size of the payload (number of bytes).
+ * @param[in] channel         GCP channel number.
+ * @param[in] messageId       ID of the message.
+ * @param[in] pMessagePayload Pointer to the payload buffer.
+ * @param[in] payloadSize     Size of the payload (number of bytes).
+ * @param[in] maxChunkSize    Maximum chunk size (in bytes).
  *
  * @return  Result of message transmission.
  *
- * @retval  GOS_SUCCESS : Transmission successful.
- * @retval  GOS_ERROR   : One of the function parameters are invalid or
- *                        there was a transmission or reception error.
+ * @retval  #GOS_SUCCESS Transmission successful.
+ * @retval  #GOS_ERROR   One of the function parameters are invalid or
+ *                       there was a transmission or reception error.
  */
 GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitMessageInternal (
         gos_gcpChannelNumber_t  channel,
@@ -415,17 +416,18 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpTransmitMessageInternal (
  * @details Receives a message over GCP (header, payload, and
  *          then transmits a response header).
  *
- * @param   channel         : GCP channel number.
- * @param   messageId       : Pointer to a variable to store the message ID.
- * @param   pMessagePayload : Pointer to a buffer to store the payload.
- * @param   payloadSize     : Size of the payload buffer (in bytes).
+ * @param[in]  channel        GCP channel number.
+ * @param[out] pMessageId     Pointer to a variable to store the message ID.
+ * @param[out] pPayloadTarget Pointer to a buffer to store the payload.
+ * @param[in]  targetSize     Size of the payload buffer (in bytes).
+ * @param[in]  maxChunkSize   Maximum chunk size (in bytes).
  *
  * @return  Result of message reception.
  *
- * @retval  GOS_SUCCESS : Reception successful.
- * @retval  GOS_ERROR   : One of the function parameters are invalid or
- *                        request header validation failed or payload
- *                        validation failed.
+ * @retval  #GOS_SUCCESS Reception successful.
+ * @retval  #GOS_ERROR   One of the function parameters are invalid or
+ *                       request header validation failed or payload
+ *                       validation failed.
  */
 GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveMessageInternal (
         gos_gcpChannelNumber_t  channel,
@@ -560,13 +562,13 @@ GOS_STATIC GOS_INLINE gos_result_t gos_gcpReceiveMessageInternal (
  * @details Checks the CRC and the protocol version of the header. Returns the acknowledge
  *          code in the variable passed as a pointer in case the validation fails.
  *
- * @param   pHeader : Pointer to the GCP header to validate.
- * @param   pAck    : Pointer to an acknowledge variable to store the result in.
+ * @param[in]  pHeader Pointer to the GCP header to validate.
+ * @param[out] pAck    Pointer to an acknowledge variable to store the result in.
  *
  * @return  Result of validation.
  *
- * @retval  GOS_SUCCESS : Validation successful.
- * @retval  GOS_ERROR   : CRC or PV error or NULL pointer parameter.
+ * @retval  #GOS_SUCCESS Validation successful.
+ * @retval  #GOS_ERROR   CRC or PV error or NULL pointer parameter.
  */
 GOS_STATIC gos_result_t gos_gcpValidateHeader (gos_gcpHeaderFrame_t* pHeader, gos_gcpAck_t* pAck)
 {
@@ -614,14 +616,14 @@ GOS_STATIC gos_result_t gos_gcpValidateHeader (gos_gcpHeaderFrame_t* pHeader, go
  *          parameter. Returns the acknowledge code in the variable passed as a pointer in
  *          case the validation fails.
  *
- * @param   pHeader : Pointer to the GCP header containing the payload data.
- * @param   pData   : Pointer to the data buffer to validate.
- * @param   pAck    : Pointer to an acknowledge variable to store the result in.
+ * @param[in]  pHeader Pointer to the GCP header containing the payload data.
+ * @param[in]  pData   Pointer to the data buffer to validate.
+ * @param[out] pAck    Pointer to an acknowledge variable to store the result in.
  *
  * @return  Result of validation.
  *
- * @retval  GOS_SUCCESS : Validation successful.
- * @retval  GOS_ERROR   : CRC error or NULL pointer parameter.
+ * @retval  #GOS_SUCCESS Validation successful.
+ * @retval  #GOS_ERROR   CRC error or NULL pointer parameter.
  */
 GOS_STATIC gos_result_t gos_gcpValidateData (gos_gcpHeaderFrame_t* pHeader, void_t* pData, gos_gcpAck_t* pAck)
 {

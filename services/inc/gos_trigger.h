@@ -96,12 +96,12 @@ typedef struct
  * @brief   Initializes the trigger instance.
  * @details Calls the initializer for the trigger mutex.
  *
- * @param   pTrigger : Pointer to the trigger to be initialized.
+ * @param[out] pTrigger Pointer to the trigger to be initialized.
  *
  * @return  Result of trigger initializing.
  *
- * @retval  GOS_SUCCESS : Trigger initialized successfully.
- * @retval  GOS_ERROR   : Trigger descriptor or trigger mutex is NULL pointer.
+ * @retval  #GOS_SUCCESS Trigger initialized successfully.
+ * @retval  #GOS_ERROR   Trigger descriptor or trigger mutex is NULL pointer.
  */
 gos_result_t gos_triggerInit (
         gos_trigger_t* pTrigger
@@ -111,12 +111,12 @@ gos_result_t gos_triggerInit (
  * @brief   Resets the trigger counter of the given trigger instance.
  * @details Sets the trigger counter of the given trigger instance to zero.
  *
- * @param   pTrigger : Pointer to the trigger instance.
+ * @param[out] pTrigger Pointer to the trigger instance.
  *
  * @return  Result of trigger resetting.
  *
- * @retval  GOS_SUCCESS : Trigger resetting successful.
- * @retval  GOS_ERROR   : Trigger is NULL pointer.
+ * @retval  #GOS_SUCCESS Trigger resetting successful.
+ * @retval  #GOS_ERROR   Trigger is NULL pointer.
  */
 gos_result_t gos_triggerReset (
         gos_trigger_t* pTrigger
@@ -127,14 +127,14 @@ gos_result_t gos_triggerReset (
  * @details Increases the trigger waiter number, and waits in a non-blocking way
  *          until the desired trigger value is reached or the timeout is reached.
  *
- * @param   pTrigger : Pointer to the trigger instance.
- * @param   value    : The desired trigger value.
- * @param   timeout  : Timeout value.
+ * @param[in, out] pTrigger Pointer to the trigger instance.
+ * @param[in]      value    The desired trigger value.
+ * @param[in]      timeout  Timeout value.
  *
  * @return  Result of trigger waiting.
  *
- * @retval  GOS_SUCCESS : Trigger value reached.
- * @retval  GOS_ERROR   : Trigger value was not reached within the timeout value.
+ * @retval  #GOS_SUCCESS Trigger value reached.
+ * @retval  #GOS_ERROR   Trigger value was not reached within the timeout value.
  */
 gos_result_t gos_triggerWait (
         gos_trigger_t* pTrigger,
@@ -146,12 +146,12 @@ gos_result_t gos_triggerWait (
  * @brief   Increments the trigger value of the given trigger.
  * @details Increments the trigger value of the given trigger.
  *
- * @param   pTrigger : Pointer to the trigger instance.
+ * @param[in, out] pTrigger Pointer to the trigger instance.
  *
  * @return  Result of trigger incrementing.
  *
- * @retval  GOS_SUCCESS : Incrementing successful.
- * @retval  GOS_ERROR   : Trigger is NULL pointer.
+ * @retval  #GOS_SUCCESS Incrementing successful.
+ * @retval  #GOS_ERROR   Trigger is NULL pointer.
  */
 gos_result_t gos_triggerIncrement (
         gos_trigger_t* pTrigger
@@ -161,12 +161,12 @@ gos_result_t gos_triggerIncrement (
  * @brief   Decrements the trigger value of the given trigger.
  * @details Decrements the trigger value of the given trigger.
  *
- * @param   pTrigger : Pointer to the trigger instance.
+ * @param[in, out] pTrigger Pointer to the trigger instance.
  *
  * @return  Result of trigger decrementing.
  *
- * @retval  GOS_SUCCESS : Decrementing successful.
- * @retval  GOS_ERROR   : Trigger is NULL pointer or value is already zero.
+ * @retval  #GOS_SUCCESS Decrementing successful.
+ * @retval  #GOS_ERROR   Trigger is NULL pointer or value is already zero.
  */
 gos_result_t gos_triggerDecrement (
         gos_trigger_t* pTrigger

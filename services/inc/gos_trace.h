@@ -64,6 +64,10 @@
 /*
  * Macros
  */
+/**
+ * @defgroup TraceFormatters Trace formatter macros
+ * @{
+ */
 #define TRACE_FORMAT_RESET        "\x1B[0m"     //!< Reset formatting.
 #define TRACE_FG_RED_START        "\x1B[31m"    //!< Red foreground start.
 #define TRACE_FG_GREEN_START      "\x1B[32m"    //!< Green foreground start.
@@ -85,6 +89,9 @@
 #define TRACE_ITALIC_START        "\x1B[3m"     //!< Italic start.
 #define TRACE_UNDERLINE_START     "\x1B[4m"     //!< Underline start.
 #define TRACE_STRIKETHROUGH_START "\x1B[9m"     //!< Strikethrough start.
+/**
+ * @}
+ */
 
 /*
  * Function prototypes
@@ -95,8 +102,8 @@
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS : Initialization successful.
- * @retval  GOS_ERROR   : Queue creation or task registration error.
+ * @retval  #GOS_SUCCESS Initialization successful.
+ * @retval  #GOS_ERROR   Queue creation or task registration error.
  */
 gos_result_t gos_traceInit (
         void_t
@@ -106,13 +113,13 @@ gos_result_t gos_traceInit (
  * @brief   Traces a given message.
  * @details Places the given message to the trace queue (for the trace daemon to print it).
  *
- * @param   addTimeStamp : Flag to indicate whether to add time-stamp or not.
- * @param   traceMessage : String to trace.
+ * @param[in] addTimeStamp Flag to indicate whether to add time-stamp or not.
+ * @param[in] traceMessage String to trace.
  *
  * @return  Result of tracing.
  *
- * @retval  GOS_SUCCESS : Tracing successful.
- * @retval  GOS_ERROR   : Queue put error.
+ * @retval  #GOS_SUCCESS Tracing successful.
+ * @retval  #GOS_ERROR   Queue put error.
  *
  * @remark  This function uses the queue service.
  */
@@ -126,14 +133,14 @@ gos_result_t gos_traceTrace (
  * @details Prints the formatted message into a local buffer and places it
  *          to the trace queue (for the trace daemon to print it).
  *
- * @param   addTimeStamp : Flag to indicate whether to add time-stamp or not.
- * @param   traceFormat  : Formatter string.
- * @param   ...          : Optional parameters.
+ * @param[in] addTimeStamp Flag to indicate whether to add time-stamp or not.
+ * @param[in] traceFormat  Formatter string.
+ * @param[in] ...          Optional parameters.
  *
  * @return  Result of formatted tracing.
  *
- * @retval  GOS_SUCCESS : Formatted tracing successful.
- * @retval  GOS_ERROR   : Queue put error.
+ * @retval  #GOS_SUCCESS Formatted tracing successful.
+ * @retval  #GOS_ERROR   Queue put error.
  */
 gos_result_t gos_traceTraceFormatted (
         bool_t            addTimeStamp,
@@ -146,13 +153,13 @@ gos_result_t gos_traceTraceFormatted (
  * @details Prints the formatted message into a local buffer and transmits it
  *          via the trace port.
  *
- * @param   traceFormat : Formatter string.
- * @param   ...         : Optional parameters.
+ * @param[in] traceFormat Formatter string.
+ * @param[in] ...         Optional parameters.
  *
  * @return  Result of formatted tracing.
  *
- * @retval  GOS_SUCCESS : Message traced successfully.
- * @retval  GOS_ERROR   : Transmit error.
+ * @retval  #GOS_SUCCESS Message traced successfully.
+ * @retval  #GOS_ERROR   Transmit error.
  */
 gos_result_t gos_traceTraceFormattedUnsafe (
         GOS_CONST char_t* traceFormat,

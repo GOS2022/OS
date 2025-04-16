@@ -20,5 +20,5 @@ Contribution to this project is encouraged and appriciated.
 If you have any questions or ideas, feel free to contact me: ahmedibrahim.gazar97@gmail.com
 
 Current OS version: 1.1
-Last updated: 2025-07-04
+Last updated: 2025-04-16
 (c) 2023, Ahmed Gazar

@@ -74,12 +74,12 @@ typedef gos_result_t (*gos_traceDriverTransmitString_Unsafe_t)(char_t*);
  * @brief   Trace driver transmit string function skeleton.
  * @details If registered, it calls the custom transmit function.
  *
- * @param   pString     : String to trace.
+ * @param[in] pString String to trace.
  *
  * @return  Result of string transmission.
  *
- * @retval  GOS_SUCCESS : According to user implementation.
- * @retval  GOS_ERROR   : According to user implementation / function not registered.
+ * @retval  #GOS_SUCCESS According to user implementation.
+ * @retval  #GOS_ERROR   According to user implementation / function not registered.
  */
 gos_result_t gos_traceDriverTransmitString (char_t* pString);
 
@@ -87,12 +87,12 @@ gos_result_t gos_traceDriverTransmitString (char_t* pString);
  * @brief   Trace driver unsafe transmit string function skeleton.
  * @details If registered, it calls the custom unsafe transmit function.
  *
- * @param   pString     : String to trace.
+ * @param[in] pString String to trace.
  *
  * @return  Result of string transmission.
  *
- * @retval  GOS_SUCCESS : According to user implementation.
- * @retval  GOS_ERROR   : According to user implementation / function not registered.
+ * @retval  #GOS_SUCCESS According to user implementation.
+ * @retval  #GOS_ERROR   According to user implementation / function not registered.
  */
 gos_result_t gos_traceDriverTransmitString_Unsafe (char_t* pString);
 

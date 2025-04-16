@@ -74,12 +74,12 @@ typedef gos_result_t (*gos_shellDriverTransmitString_t)(char_t*);
  * @brief   Receives a character.
  * @details If registered, it calls the custom character receiver function.
  *
- * @param   pChar       : Pointer to a character variable to store the received character in.
+ * @param[out] pChar Pointer to a character variable to store the received character in.
  *
  * @return  Result of character reception.
  *
- * @retval  GOS_SUCCESS : According to user implementation.
- * @retval  GOS_ERROR   : According to user implementation / function not registered.
+ * @retval  #GOS_SUCCESS According to user implementation.
+ * @retval  #GOS_ERROR   According to user implementation / function not registered.
  */
 gos_result_t gos_shellDriverReceiveChar (char_t* pChar);
 
@@ -87,13 +87,13 @@ gos_result_t gos_shellDriverReceiveChar (char_t* pChar);
  * @brief   Transmits a string.
  * @details If registered, it calls the custom string transmitter function.
  *
- * @param   pString     : Pointer to the string to be transmitted.
- * @param   ...         : Variable parameters for formatted strings.
+ * @param[in] pString Pointer to the string to be transmitted.
+ * @param[in] ...     Variable parameters for formatted strings.
  *
  * @return  Result of string transmission.
  *
- * @retval  GOS_SUCCESS : According to user implementation.
- * @retval  GOS_ERROR   : According to user implementation / function not registered.
+ * @retval  #GOS_SUCCESS According to user implementation.
+ * @retval  #GOS_ERROR   According to user implementation / function not registered.
  */
 gos_result_t gos_shellDriverTransmitString (char_t* pString, ...);
 

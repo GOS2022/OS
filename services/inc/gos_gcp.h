@@ -83,8 +83,8 @@ typedef gos_result_t (*gos_gcpReceiveFunction_t) (u8_t*, u16_t);
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS : GCP service initialized successfully.
- * @retval  GOS_ERROR   : Lock creation error.
+ * @retval  #GOS_SUCCESS GCP service initialized successfully.
+ * @retval  #GOS_ERROR   Lock creation error.
  */
 gos_result_t gos_gcpInit (
         void_t
@@ -94,14 +94,14 @@ gos_result_t gos_gcpInit (
  * @brief   Registers the physical-layer transmit and receive driver functions.
  * @details Registers the physical-layer transmit and receive driver functions.
  *
- * @param   channel          : GCP channel.
- * @param   transmitFunction : Transmit function to register.
- * @param   receiveFunction  : Receive function to register.
+ * @param [in] channel          GCP channel.
+ * @param [in] transmitFunction Transmit function to register.
+ * @param [in] receiveFunction  Receive function to register.
  *
  * @return  Result of physical driver registration.
  *
- * @retval  GOS_SUCCESS      : Physical driver registration successful.
- * @retval  GOS_ERROR        : Transmit or receive function is NULL.
+ * @retval  #GOS_SUCCESS Physical driver registration successful.
+ * @retval  #GOS_ERROR   Transmit or receive function is NULL.
  */
 gos_result_t gos_gcpRegisterPhysicalDriver (
         gos_gcpChannelNumber_t    channel,
@@ -113,16 +113,16 @@ gos_result_t gos_gcpRegisterPhysicalDriver (
  * @brief   Transmits the given message via the GCP protocol.
  * @details Calls the internal message transmitter function.
  *
- * @param   channel         : GCP channel.
- * @param   messageId       : Message ID.
- * @param   pMessagePayload : Pointer to the message payload.
- * @param   payloadSize     : Size of the payload (in bytes).
- * @param   maxChunkSize    : Maximum size of payload chunks.
+ * @param[in] channel         GCP channel.
+ * @param[in] messageId       Message ID.
+ * @param[in] pMessagePayload Pointer to the message payload.
+ * @param[in] payloadSize     Size of the payload (in bytes).
+ * @param[in] maxChunkSize    Maximum size of payload chunks.
  *
  * @return  Result of message transmission.
  *
- * @retval  GOS_SUCCESS     : Message transmitted successfully.
- * @retval  GOS_ERROR       : An error occurred during transmission or validation.
+ * @retval  #GOS_SUCCESS Message transmitted successfully.
+ * @retval  #GOS_ERROR   An error occurred during transmission or validation.
  */
 gos_result_t gos_gcpTransmitMessage (
         gos_gcpChannelNumber_t  channel,
@@ -136,16 +136,16 @@ gos_result_t gos_gcpTransmitMessage (
  * @brief   Receives the given message via the GCP protocol.
  * @details Calls the internal receiver function.
  *
- * @param   channel        : GCP channel.
- * @param   pMessageId     : Pointer to a variable to store the message ID.
- * @param   pPayloadTarget : Pointer to the payload target buffer.
- * @param   targetSize     : Size of the target buffer (in bytes).
- * @param   maxChunkSize    : Maximum size of payload chunks.
+ * @param[in]  channel        GCP channel.
+ * @param[out] pMessageId     Pointer to a variable to store the message ID.
+ * @param[out] pPayloadTarget Pointer to the payload target buffer.
+ * @param[in]  targetSize     Size of the target buffer (in bytes).
+ * @param[in]  maxChunkSize   Maximum size of payload chunks.
  *
  * @return  Result of message reception.
  *
- * @retval  GOS_SUCCESS    : Message received successfully.
- * @retval  GOS_ERROR      : An error occurred during reception or validation.
+ * @retval  #GOS_SUCCESS Message received successfully.
+ * @retval  #GOS_ERROR   An error occurred during reception or validation.
  */
 gos_result_t gos_gcpReceiveMessage (
         gos_gcpChannelNumber_t  channel,

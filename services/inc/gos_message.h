@@ -139,8 +139,8 @@ typedef struct
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS : Initialization successful.
- * @retval  GOS_ERROR   : Message daemon task registration failed.
+ * @retval  #GOS_SUCCESS Initialization successful.
+ * @retval  #GOS_ERROR   Message daemon task registration failed.
  */
 gos_result_t gos_messageInit (
         void_t
@@ -152,18 +152,18 @@ gos_result_t gos_messageInit (
  *          message. Until the message is received, the caller task is put to blocked state.
  *          The caller will be unblocked if the message is received or the timeout elapsed.
  *
- * @param   messageIdArray : Array of messages IDs the function should receive. Must be
- *                           terminated by a 0 element!
- * @param   target         : Pointer to the target message structure. Received data
- *                           will be placed here.
- * @param   tmo            : Timeout value in [ms]. The resolution of timeout is 10ms!
- *                           Do not use endless timeout if it is not guaranteed that
- *                           the message will be received!
+ * @param[in]  messageIdArray Array of messages IDs the function should receive. Must be
+ *                            terminated by a 0 element!
+ * @param[out] target         Pointer to the target message structure. Received data
+ *                            will be placed here.
+ * @param[in]  tmo            Timeout value in [ms]. The resolution of timeout is 10ms!
+ *                            Do not use endless timeout if it is not guaranteed that
+ *                            the message will be received!
  *
  * @return    Result of message reception.
  *
- * @retval  GOS_SUCCESS    : Reception successful, data placed in the target structure.
- * @retval  GOS_ERROR      : Reception failed because of invalid parameters or timeout.
+ * @retval  #GOS_SUCCESS Reception successful, data placed in the target structure.
+ * @retval  #GOS_ERROR   Reception failed because of invalid parameters or timeout.
  */
 gos_result_t gos_messageRx (
         gos_messageId_t*     messageIdArray,
@@ -176,12 +176,12 @@ gos_result_t gos_messageRx (
  * @details Copies the message in the internal message array for the message daemon to
  *          transfer it to the recipient task.
  *
- * @param   message     : Pointer to the message structure to be transmitted.
+ * @param[in] message Pointer to the message structure to be transmitted.
  *
  * @return  Result of message transmission.
  *
- * @retval  GOS_SUCCESS : Message transmission initiated successfully.
- * @retval  GOS_ERROR   : Invalid message pointer or data or message array is full.
+ * @retval  #GOS_SUCCESS Message transmission initiated successfully.
+ * @retval  #GOS_ERROR   Invalid message pointer or data or message array is full.
  */
 gos_result_t gos_messageTx (
         gos_message_t* message

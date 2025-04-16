@@ -116,6 +116,10 @@
 /*
  * Macros
  */
+/**
+ * @defgroup GlobalDef Global definitions
+ * @{
+ */
 #ifndef NULL
 /**
  * NULL pointer.
@@ -214,6 +218,14 @@
 #define GOS_ASM                        __asm volatile
 
 /**
+ * @}
+ */
+
+/**
+ * @defgroup ControlDef Control macros for scheduling and ISR state setting
+ * @{
+ */
+/**
  * Disable scheduling.
  */
 #define GOS_DISABLE_SCHED              {                                            \
@@ -282,7 +294,14 @@
                                            }                                                              \
                                            GOS_ENABLE_SCHED                                               \
                                        }
+/**
+ * @}
+ */
 
+/**
+ * @defgroup PrivDef Privilege bit definitions
+ * @{
+ */
 /**
  * Task manipulation privilege flag.
  */
@@ -317,7 +336,9 @@
  * Kernel reserved.
  */
 #define GOS_PRIV_RESERVED_5            ( 1 << 8 )
-
+/**
+ * @}
+ */
 /**
  * Result concatenating macro.
  */
@@ -335,9 +356,9 @@
 /*
  * Type definitions
  */
-
-/*
- * Basic data types.
+/**
+ * @defgroup BasicData Basic data type definitions to be used in a GOS system
+ * @{
  */
 typedef uint8_t  bool_t;                                       //!< Boolean logic type.
 typedef uint8_t  u8_t;                                         //!< 8-bit unsigned type.
@@ -352,9 +373,12 @@ typedef char     char_t;                                       //!< 8-bit charac
 typedef float    float_t;                                      //!< Single precision float type.
 typedef double   double_t;                                     //!< Double precision float type.
 typedef void     void_t;                                       //!< Void type.
-
-/*
- * Task-related definitions.
+/**
+ * @}
+ */
+/**
+ * @defgroup TaskDef Task-related type definitions
+ * @{
  */
 typedef u16_t    gos_tid_t;                                    //!< Task ID type.
 typedef char_t   gos_taskName_t [CFG_TASK_MAX_NAME_LENGTH];    //!< Task name type.
@@ -367,7 +391,9 @@ typedef u32_t    gos_taskRunCounter_t;                         //!< Run counter 
 typedef u64_t    gos_taskRunTime_t;                            //!< Run-time type.
 typedef u32_t    gos_taskCSCounter_t;                          //!< Context-switch counter type.
 typedef u16_t    gos_taskStackSize_t;                          //!< Task stack size type.
-
+/**
+ * @}
+ */
 /**
  *  Task state enumerator.
  *
@@ -403,8 +429,9 @@ typedef enum
     GOS_TASK_PRIVILEGED_USER      = 0x20FF     //!< User with logging right.
 }gos_taskPrivilegeLevel_t;
 
-/*
- * Hook function type definitions.
+/**
+ * @defgroup HookDef Hook function type definitions
+ * @{
  */
 typedef void_t    (*gos_taskSwapHook_t    )(gos_tid_t, gos_tid_t  );    //!< Task swap hook type.
 typedef void_t    (*gos_taskIdleHook_t    )(void_t                );    //!< Task idle hook type.
@@ -418,6 +445,9 @@ typedef void_t    (*gos_taskDeleteHook_t  )(gos_tid_t             );    //!< Tas
 typedef void_t    (*gos_sysTickHook_t     )(void_t                );    //!< System tick hook type.
 typedef void_t    (*gos_privilegedHook_t  )(void_t                );    //!< Privileged mode hook type.
 typedef void_t    (*gos_preResetHook_t    )(void_t                );    //!< Kernel pre-reset hook type.
+/**
+ * @}
+ */
 
 /**
  *  Result type enumerator.
@@ -452,6 +482,10 @@ typedef enum
     GOS_UNPRIVILEGED    = 0b01001    //!< GOS_UNPRIVILEDGED
 }gos_kernel_privilege_t;
 
+/**
+ * @defgroup TimeDef Time-related definitions
+ * @{
+ */
 typedef u16_t   gos_microsecond_t;   //!< Microsecond type.
 typedef u16_t   gos_millisecond_t;   //!< Millisecond type.
 typedef u8_t    gos_second_t;        //!< Second type.
@@ -473,6 +507,9 @@ typedef struct __attribute__((packed))
     gos_hour_t        hours;         //!< Hours.
     gos_day_t         days;          //!< Days.
 }gos_runtime_t;
+/**
+ * @}
+ */
 
 /**
  * Task descriptor structure.
@@ -508,6 +545,10 @@ typedef struct __attribute__((packed))
 /*
  * Function prototypes
  */
+/**
+ * @defgroup KernelFunc Kernel functions
+ * @{
+ */
 
 /**
  * @brief   This function initializes the kernel.
@@ -516,423 +557,10 @@ typedef struct __attribute__((packed))
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS :    Kernel initialization successful.
- * @retval  GOS_ERROR   :    Kernel task suspension unsuccessful.
+ * @retval  #GOS_SUCCESS Kernel initialization successful.
+ * @retval  #GOS_ERROR   Kernel task suspension unsuccessful.
  */
 gos_result_t gos_kernelInit (
-        void_t
-        );
-
-/**
- * @brief   This function registers an array of tasks for scheduling.
- * @details Checks the task descriptor array pointer and registers the tasks one by one.
- *
- * @param   taskDescriptors : Pointer to a task descriptor structure array.
- * @param   arraySize       : Size of the array in bytes.
- *
- * @return  Result of task registration.
- *
- * @retval  GOS_SUCCESS     : Tasks registered successfully.
- * @retval  GOS_ERROR       : Invalid task descriptor (NULL function pointer,
- *                            invalid priority level, invalid stack size, idle task registration,
- *                            or stack size is not 4-byte-aligned) in one of the array elements or
- *                            task array is full.
- */
-gos_result_t gos_taskRegisterTasks (
-        gos_taskDescriptor_t* taskDescriptors,
-        u16_t                 arraySize
-        );
-
-/**
- * @brief   This function registers a task for scheduling.
- * @details Checks the task descriptor parameters and then tries to find the next empty
- *          slot in the internal task array. When it is found, it registers the task in
- *          that slot.
- *
- * @param   taskDescriptor : Pointer to a task descriptor structure.
- * @param   taskId         : Pointer to a variable to hold to assigned task ID value.
- *
- * @return  Result of task registration.
- *
- * @retval  GOS_SUCCESS    : Task registered successfully.
- * @retval  GOS_ERROR      : Invalid task descriptor (NULL function pointer,
- *                           invalid priority level, invalid stack size, idle task registration,
- *                           or stack size is not 4-byte-aligned) or task array is full.
- */
-gos_result_t gos_taskRegister (
-        gos_taskDescriptor_t* taskDescriptor,
-        gos_tid_t*            taskId
-        );
-
-/**
- * @brief   Sends the current task to sleeping state.
- * @details Checks the current task and its state, modifies it to sleeping, and
- *          if there is a sleep hook function registered, it calls it. Then, it
- *          invokes a rescheduling.
- *
- * @param   sleepTicks  : Minimum number of ticks until the task should remain in sleeping state.
- *
- * @return  Result of task sleeping.
- *
- * @retval  GOS_SUCCESS : Task successfully sent to sleeping state.
- * @retval  GOS_ERROR   : Function called from idle task or task state is not ready.
- */
-gos_result_t gos_taskSleep (
-        gos_taskSleepTick_t sleepTicks
-        );
-
-/**
- * @brief   Wakes up the given task.
- * @details Checks the current task and its state, modifies it to ready, and
- *          if there is a wake-up hook function registered, it calls it.
- *
- * @param   taskId      : ID of the task to be waken up.
- *
- * @return  Result of task wake-up.
- *
- * @retval  GOS_SUCCESS : Task waken up successfully.
- * @retval  GOS_ERROR   : Task ID is invalid, or task is not sleeping.
- */
-gos_result_t gos_taskWakeup (
-        gos_tid_t taskId
-        );
-
-/**
- * @brief   Sends the given task to suspended state.
- * @details Checks the given task ID and its state, modified it to suspended, and
- *          if there is a suspend hook function registered, it calls it. If the
- *          suspended function is the currently running one, it invokes a rescheduling.
- *
- * @param   taskId     : ID of the task to be suspended.
- *
- * @return  Result of task suspension.
- *
- * @retval  GOS_SUCESS : Task suspended successfully.
- * @retval  GOS_ERROR  : Task ID is invalid, or task state is not ready or sleeping.
- */
-gos_result_t gos_taskSuspend (
-        gos_tid_t taskId
-        );
-
-/**
- * @brief   Resumes the given task.
- * @details Checks the given task ID and its state, modified it to ready, and
- *          if there is a resume hook function registered, it calls it.
- *
- * @param   taskId     : ID of the task to be resumed.
- *
- * @return  Result of task resumption.
- *
- * @retval  GOS_SUCESS : Task resumed successfully.
- * @retval  GOS_ERROR  : Task ID is invalid, or task is not suspended.
- */
-gos_result_t gos_taskResume (
-        gos_tid_t taskId
-        );
-
-/**
- * @brief   Sends the given task to blocked state.
- * @details Checks the given task ID and its state, modified it to blocked, and
- *          if there is a block hook function registered, it calls it. If the blocked
- *          function is the currently running one, it invokes a rescheduling.
- *
- * @param   taskId     : ID of the task to be blocked.
- *
- * @return  Result of task blocking.
- *
- * @retval  GOS_SUCESS : Task blocked successfully.
- * @retval  GOS_ERROR  : Task ID is invalid, or task state is not ready.
- */
-gos_result_t gos_taskBlock (
-        gos_tid_t          taskId,
-        gos_blockMaxTick_t blockTicks
-        );
-
-/**
- * @brief   Unblocks the given task.
- * @details Checks the given task ID and its state, modified it to ready, and
- *          if there is an unblock hook function registered, it calls it.
- *
- * @param   taskId     : ID of the task to be unblocked.
- *
- * @return  Result of task unblocking.
- *
- * @retval  GOS_SUCESS : Task unblocked successfully.
- * @retval  GOS_ERROR  : Task ID is invalid, or task is not blocked.
- */
-gos_result_t gos_taskUnblock (
-        gos_tid_t taskId
-        );
-
-/**
- * @brief   Deletes the given task from the scheduling array.
- * @details Checks the given task ID and its state, modifies it to zombie, and
- *          if there is a delete hook function registered, it calls it.
- *
- * @param   taskId      : ID of the task to be deleted.
- *
- * @return  Result of deletion.
- *
- * @retval  GOS_SUCCESS : Task deleted successfully.
- * @retval  GOS_ERROR   : Task is already a zombie.
- */
-gos_result_t gos_taskDelete (
-        gos_tid_t taskId
-        );
-
-/**
- * @brief   Sets the current priority of the given task to the given value (for temporary change).
- * @details Checks the given parameters and sets the current priority of the given task.
- *
- * @param   taskId       : ID of the task to change the priority of.
- * @param   taskPriority : The desired task priority.
- *
- * @return  Result of priority change.
- *
- * @retval  GOS_SUCCESS  : Current priority changed successfully.
- * @retval  GOS_ERROR    : Invalid task ID or priority.
- */
-gos_result_t gos_taskSetPriority (
-        gos_tid_t      taskId,
-        gos_taskPrio_t taskPriority
-        );
-
-/**
- * @brief   Sets the original priority of the given task to the given value (for permanent change).
- * @details Checks the given parameters and sets the original priority of the given task.
- *
- * @param   taskId       : ID of the task to change the priority of.
- * @param   taskPriority : The desired task priority.
- *
- * @return  Result of priority change.
- *
- * @retval  GOS_SUCCESS  : Original priority changed successfully.
- * @retval  GOS_ERROR    : Invalid task ID or priority.
- */
-gos_result_t gos_taskSetOriginalPriority (
-        gos_tid_t      taskId,
-        gos_taskPrio_t taskPriority
-        );
-
-/**
- * @brief   Gets the current priority of the given task.
- * @details Checks the given parameters and saves the current priority in the given variable.
- *
- * @param   taskId       : ID of the task to get the priority of.
- * @param   taskPriority : Pointer to a priority variable to store the priority in.
- *
- * @return  Result of priority getting.
- *
- * @retval  GOS_SUCCESS  : Current priority getting successfully.
- * @retval  GOS_ERROR    : Invalid task ID or priority variable is NULL.
- */
-gos_result_t gos_taskGetPriority (
-        gos_tid_t       taskId,
-        gos_taskPrio_t* taskPriority
-        );
-
-/**
- * @brief   Gets the original priority of the given task.
- * @details Checks the given parameters and saves the original priority in the given variable.
- *
- * @param   taskId       : ID of the task to get the priority of.
- * @param   taskPriority : Pointer to a priority variable to store the priority in.
- *
- * @return  Result of priority getting.
- *
- * @retval  GOS_SUCCESS  : Original priority getting successfully.
- * @retval  GOS_ERROR    : Invalid task ID or priority variable is NULL.
- */
-gos_result_t gos_taskGetOriginalPriority (
-        gos_tid_t       taskId,
-        gos_taskPrio_t* taskPriority
-        );
-
-/**
- * @brief   Adds the given privileges to the given task.
- * @details Checks the caller task if it has the privilege to modify task privileges and
- *          if so, it adds the given privileges to the given task.
- *
- * @param   taskId      : ID of the task to give the privileges to.
- * @param   privileges  : Privileges to be added.
- *
- * @return  Result of privilege adding.
- *
- * @retval  GOS_SUCCESS : Privileges added successfully.
- * @retval  GOS_ERROR   : Invalid task ID or caller does not have the privilege to modify task
- *                        privileges.
- */
-gos_result_t gos_taskAddPrivilege (
-        gos_tid_t                taskId,
-        gos_taskPrivilegeLevel_t privileges
-        );
-
-/**
- * @brief   Removes the given privileges from the given task.
- * @details Checks the caller task if it has the privilege to modify task privileges and
- *          if so, it removes the given privileges from the given task.
- *
- * @param   taskId      : ID of the task to remove the privileges from.
- * @param   privileges  : Privileges to be removed.
- *
- * @return  Result of privilege removing.
- *
- * @retval  GOS_SUCCESS : Privileges removed successfully.
- * @retval  GOS_ERROR   : Invalid task ID or caller does not have the privilege to modify task
- *                        privileges.
- */
-gos_result_t gos_taskRemovePrivilege (
-        gos_tid_t                taskId,
-        gos_taskPrivilegeLevel_t privileges
-        );
-
-/**
- * @brief   Sets the given privileges for the given task.
- * @details Checks the caller task if it has the privilege to modify task privileges and
- *          if so, it sets the given privileges for the given task.
- *
- * @param   taskId      : ID of the task to set the privileges for.
- * @param   privileges  : Privileges to be set.
- *
- * @return  Result of privilege setting.
- *
- * @retval  GOS_SUCCESS : Privileges set successfully.
- * @retval  GOS_ERROR   : Invalid task ID or caller does not have the privilege to modify task
- *                        privileges.
- */
-gos_result_t gos_taskSetPrivileges (
-        gos_tid_t                taskId,
-        gos_taskPrivilegeLevel_t privileges
-        );
-
-/**
- * @brief   Gets the privileges of the given task.
- * @details Returns the privilege flags of the given task.
- *
- * @param   taskId      : ID of the task to get the privileges of.
- * @param   privileges  : Variable to store the privilege flags.
- *
- * @return  Result of privilege getting.
- *
- * @retval  GOS_SUCCESS : Privileges get successful.
- * @retval  GOS_ERROR   : Invalid task ID or privilege variable is NULL pointer.
- */
-gos_result_t gos_taskGetPrivileges (
-        gos_tid_t                 taskId,
-        gos_taskPrivilegeLevel_t* privileges
-        );
-
-/**
- * @brief   Gets the task name of the task with the given ID.
- * @details Copies the task name corresponding with the given task ID to the task name variable.
- *
- * @param   taskId      : Pointer to a task ID variable to store the returned ID.
- * @param   taskName    : Task name pointer to store the returned task name.
- *
- * @return  Success of task name get.
- *
- * @retval  GOS_SUCCESS : Task name found successfully.
- * @retval  GOS_ERROR   : Invalid task ID or task name variable is NULL.
- */
-gos_result_t gos_taskGetName (
-        gos_tid_t      taskId,
-        gos_taskName_t taskName
-        );
-
-/**
- * @brief   Gets the task ID of the task with the given name.
- * @details This function loops through the internal task array and tries to find the
- *          given task name to get the corresponding task ID.
- *
- * @param   taskName    : Name of the task (string).
- * @param   taskId      : Pointer to a task ID variable to store the returned ID.
- *
- * @return  Success of task ID get.
- *
- * @retval  GOS_SUCCESS : Task ID found successfully.
- * @retval  GOS_ERROR   : Task name not found.
- */
-gos_result_t gos_taskGetId (
-        gos_taskName_t taskName,
-        gos_tid_t*     taskId
-        );
-
-/**
- * @brief   Returns the ID of the currently running task.
- * @details Returns the ID of the currently running task.
- *
- * @param   taskId      : Pointer to a task ID variable to store the current task ID.
- *
- * @return  Result of current task ID get.
- *
- * @retval  GOS_SUCCESS : Current task ID returned successfully.
- * @retval  GOS_ERROR   : Task ID pointer is NULL.
- */
-gos_result_t gos_taskGetCurrentId (
-        gos_tid_t* taskId
-        );
-
-/**
- * @brief   Returns the task data of the given task.
- * @details Based on the task ID, it copies the content of the internal task
- *          descriptor array element to the given task descriptor.
- *
- * @param   taskId      : ID of the task to get the data of.
- * @param   taskData    : Pointer to the task descriptor to save the task data in.
- *
- * @return  Result of task data get.
- *
- * @retval  GOS_SUCCESS : Task data copied successfully.
- * @retval  GOS_ERROR   : Invalid task ID or task data pointer is NULL.
- */
-gos_result_t gos_taskGetData (
-        gos_tid_t             taskId,
-        gos_taskDescriptor_t* taskData
-        );
-
-/**
- * @brief   Returns the task data of the given task.
- * @details Based on the task index, it copies the content of the internal task
- *          descriptor array element to the given task descriptor.
- *
- * @param   taskIndex   : Index of the task to get the data of.
- * @param   taskData    : Pointer to the task descriptor to save the task data in.
- *
- * @return  Result of task data get.
- *
- * @retval  GOS_SUCCESS : Task data copied successfully.
- * @retval  GOS_ERROR   : Invalid task index or task data pointer is NULL.
- */
-gos_result_t gos_taskGetDataByIndex (
-        u16_t                 taskIndex,
-        gos_taskDescriptor_t* taskData
-        );
-
-/**
- * @brief   Returns the number of registered tasks.
- * @details Loops through the internal task array and counts the
- *          entries where a task function is registered.
- *
- * @param   pTaskNum : Variable to store the number of tasks.
- *
- * @return  Success of task number counting.
- *
- * @retval  GOS_SUCCESS : Task number counted successfully.
- * @retval  GOS_ERROR   : Target variable is NULL pointer.
- */
-gos_result_t gos_taskGetNumber (
-        u16_t* pTaskNum
-        );
-
-/**
- * @brief   Yields the current task.
- * @details Invokes rescheduling.
- *
- * @return  Result of task yield.
- *
- * @retval  GOS_SUCCESS : Yield successful.
- */
-gos_result_t gos_taskYield (
         void_t
         );
 
@@ -941,12 +569,12 @@ gos_result_t gos_taskYield (
  * @details Checks whether the param is NULL pointer and a hook function is already
  *          registered, and both conditions are false, it registers the hook function.
  *
- * @param   swapHookFunction : Swap hook function.
+ * @param[in] swapHookFunction Swap hook function.
  *
  * @return  Result of registration.
  *
- * @retval  GOS_SUCCESS      : Registration successful.
- * @retval  GOS_ERROR        : Registration failed (hook function already exists or parameter is NULL).
+ * @retval  #GOS_SUCCESS Registration successful.
+ * @retval  #GOS_ERROR   Registration failed (hook function already exists or parameter is NULL).
  */
 gos_result_t gos_kernelRegisterSwapHook (
         gos_taskSwapHook_t swapHookFunction
@@ -957,12 +585,12 @@ gos_result_t gos_kernelRegisterSwapHook (
  * @details Checks whether the param is NULL pointer and a hook function is already
  *          registered, and both conditions are false, it registers the hook function.
  *
- * @param   idleHookFunction : Idle hook function.
+ * @param[in] idleHookFunction Idle hook function.
  *
  * @return  Result of registration.
  *
- * @retval  GOS_SUCCESS      : Registration successful.
- * @retval  GOS_ERROR        : Registration failed (hook function already exists or parameter is NULL).
+ * @retval  #GOS_SUCCESS Registration successful.
+ * @retval  #GOS_ERROR   Registration failed (hook function already exists or parameter is NULL).
  */
 gos_result_t gos_kernelRegisterIdleHook (
         gos_taskIdleHook_t idleHookFunction
@@ -973,12 +601,12 @@ gos_result_t gos_kernelRegisterIdleHook (
  * @details Checks whether the param is NULL pointer and a hook function is already
  *          registered, and both conditions are false, it registers the hook function.
  *
- * @param   sysTickHookFunction : System tick hook function.
+ * @param[in] sysTickHookFunction System tick hook function.
  *
  * @return  Result of registration.
  *
- * @retval  GOS_SUCCESS  : Registration successful.
- * @retval  GOS_ERROR    : Registration failed (hook function already exists or parameter is NULL).
+ * @retval  #GOS_SUCCESS Registration successful.
+ * @retval  #GOS_ERROR   Registration failed (hook function already exists or parameter is NULL).
  */
 gos_result_t gos_kernelRegisterSysTickHook (
         gos_sysTickHook_t sysTickHookFunction
@@ -989,12 +617,12 @@ gos_result_t gos_kernelRegisterSysTickHook (
  * @details Checks if a hook function has already been registered, and,
  *          if not, it registers the new hook function.
  *
- * @param   privilegedHookFunction : Privileged hook function.
+ * @param[in] privilegedHookFunction Privileged hook function.
  *
  * @return  Result of registration.
  *
- * @retval  GOS_SUCCESS : Registration successful.
- * @retval  GOS_ERROR   : Registration failed (hook function already exists or parameter is NULL).
+ * @retval  #GOS_SUCCESS Registration successful.
+ * @retval  #GOS_ERROR   Registration failed (hook function already exists or parameter is NULL).
  */
 gos_result_t gos_kernelRegisterPrivilegedHook (
         gos_privilegedHook_t privilegedHookFunction
@@ -1005,12 +633,12 @@ gos_result_t gos_kernelRegisterPrivilegedHook (
  * @details Checks if a hook function has already been registered, and,
  *          if not, it registers the new hook function.
  *
- * @param   preResetHookFunction : Pre-reset hook function.
+ * @param[in] preResetHookFunction Pre-reset hook function.
  *
  * @return  Result of registration.
  *
- * @retval  GOS_SUCCESS : Registration successful.
- * @retval  GOS_ERROR   : Registration failed (hook function already exists or parameter is NULL).
+ * @retval  #GOS_SUCCESS Registration successful.
+ * @retval  #GOS_ERROR   Registration failed (hook function already exists or parameter is NULL).
  */
 gos_result_t gos_kernelRegisterPreResetHook (
 		gos_preResetHook_t preResetHookFunction
@@ -1020,12 +648,12 @@ gos_result_t gos_kernelRegisterPreResetHook (
  * @brief   Subscribes the given handler to the task delete signal.
  * @details Subscribes the given handler to the task delete signal.
  *
- * @param   deleteSignalHandler : Delete signal handler function.
+ * @param[in] deleteSignalHandler Delete signal handler function.
  *
  * @return  Result of subscription.
  *
- * @retval  GOS_SUCCESS         : Subscription successful.
- * @retval  GOS_ERROR           : Subscription failed or signal handler is NULL.
+ * @retval  #GOS_SUCCESS Subscription successful.
+ * @retval  #GOS_ERROR   Subscription failed or signal handler is NULL.
  */
 gos_result_t gos_taskSubscribeDeleteSignal (
         void_t (*deleteSignalHandler)(u16_t)
@@ -1035,12 +663,12 @@ gos_result_t gos_taskSubscribeDeleteSignal (
  * @brief   Subscribes the given handler to the dump ready signal.
  * @details Subscribes the given handler to the dump ready signal.
  *
- * @param   dumpReadySignalHandler : Dump ready signal handler function.
+ * @param[in] dumpReadySignalHandler Dump ready signal handler function.
  *
  * @return  Result of subscription.
  *
- * @retval  GOS_SUCCESS            : Subscription successful.
- * @retval  GOS_ERROR              : Subscription failed or signal handler is NULL.
+ * @retval  #GOS_SUCCESS Subscription successful.
+ * @retval  #GOS_ERROR   Subscription failed or signal handler is NULL.
  */
 gos_result_t gos_kernelSubscribeDumpReadySignal (
         void_t (*dumpReadySignalHandler)(u16_t)
@@ -1075,7 +703,7 @@ u16_t gos_kernelGetCpuUsage (
  *
  * @return  Result of kernel start.
  *
- * @retval  GOS_ERROR : First task terminated.
+ * @retval  #GOS_ERROR First task terminated.
  */
 gos_result_t gos_kernelStart (
         void_t
@@ -1110,7 +738,7 @@ void_t gos_kernelPrivilegedModeSetRequired (
  * @details This function waits in a while loop until the given number
  *          of milliseconds have elapsed based on the system timer.
  *
- * @param   microseconds    : Microseconds to wait.
+ * @param[in] microseconds Microseconds to wait.
  *
  * @return    -
  */
@@ -1123,7 +751,7 @@ void_t gos_kernelDelayUs (
  * @details This function waits in a while loop until the given number
  *          of system ticks have elapsed.
  *
- * @param   milliseconds : Milliseconds to wait.
+ * @param[in] milliseconds Milliseconds to wait.
  *
  * @return  -
  */
@@ -1136,7 +764,7 @@ void_t gos_kernelDelayMs (
  * @details Based on the total system time range, it refreshes
  *          the CPU-usage statistics of tasks.
  *
- * @param   isResetRequired : Flag to indicate whether the measurement should be reset.
+ * @param[in] isResetRequired Flag to indicate whether the measurement should be reset.
  *
  * @return  -
  */
@@ -1156,45 +784,45 @@ void_t gos_kernelDump (
         );
 
 /**
- * @brief  Sets the maximum (global) CPU load.
- * @detail Sets the value of the global CPU load above which the scheduler
- *         will start running the idle task until the CPU load falls below
- *         the limit value.
+ * @brief   Sets the maximum (global) CPU load.
+ * @details Sets the value of the global CPU load above which the scheduler
+ *          will start running the idle task until the CPU load falls below
+ *          the limit value.
  *
- * @param  maxCpuLoad : Desired maximum CPU load (0...10000 where 100 % = 10000).
+ * @param[in] maxCpuLoad Desired maximum CPU load (0...10000 where 100 % = 10000).
  *
  * @return Result of maximum CPU load setting.
  *
- * @retval GOS_SUCCESS : Maximum CPU load setting successful.
- * @retval GOS_ERROR   : Desired value is out of range.
+ * @retval #GOS_SUCCESS Maximum CPU load setting successful.
+ * @retval #GOS_ERROR   Desired value is out of range.
  */
 gos_result_t gos_kernelSetMaxCpuLoad (
         u16_t maxCpuLoad
         );
 
 /**
- * @brief  Gets the maximum (global) CPU load.
- * @detail Returns the value of the maximum CPU load (limit).
+ * @brief   Gets the maximum (global) CPU load.
+ * @details Returns the value of the maximum CPU load (limit).
  *
- * @param  maxCpuLoad : Target variable to store the maximum CPU load.
+ * @param[out] pMaxCpuLoad Target variable to store the maximum CPU load.
  *
  * @return Result of maximum CPU load getting.
  *
- * @retval GOS_SUCCESS : Maximum CPU load getting successful.
- * @retval GOS_ERROR   : Target variable is NULL.
+ * @retval #GOS_SUCCESS Maximum CPU load getting successful.
+ * @retval #GOS_ERROR   Target variable is NULL.
  */
 gos_result_t gos_kernelGetMaxCpuLoad (
-        u16_t* maxCpuLoad
+        u16_t* pMaxCpuLoad
         );
 
 /**
- * @brief  Returns if the current task is ISR.
- * @detail Returns if the inIsr flag is greater than zero.
+ * @brief   Returns if the current task is ISR.
+ * @details Returns if the inIsr flag is greater than zero.
  *
- * @return Whether the caller is ISR (Interrupt Service Routine).
+ * @return  Whether the caller is ISR (Interrupt Service Routine).
  *
- * @retval GOS_TRUE  : Caller is ISR.
- * @retval GOS_FALSE : Caller is not ISR.
+ * @retval  #GOS_TRUE  Caller is ISR.
+ * @retval  #GOS_FALSE Caller is not ISR.
  */
 bool_t gos_kernelIsCallerIsr (
         void_t
@@ -1204,14 +832,441 @@ bool_t gos_kernelIsCallerIsr (
  * @brief   Reschedules the kernel.
  * @details Based on the privilege, it invokes a kernel reschedule event.
  *
- * @param   privilege : Privilege level.
+ * @param[in] privilege Privilege level.
  *
  * @return  -
  */
 void_t gos_kernelReschedule (
         gos_kernel_privilege_t privilege
         );
+/**
+ * @}
+ */
+/**
+ * @defgroup TaskFunc Task-related functions
+ * @{
+ */
+/**
+ * @brief   This function registers an array of tasks for scheduling.
+ * @details Checks the task descriptor array pointer and registers the tasks one by one.
+ *
+ * @param[in] taskDescriptors Pointer to a task descriptor structure array.
+ * @param[in] arraySize       Size of the array in bytes.
+ *
+ * @return  Result of task registration.
+ *
+ * @retval  #GOS_SUCCESS Tasks registered successfully.
+ * @retval  #GOS_ERROR   Invalid task descriptor (NULL function pointer,
+ *                       invalid priority level, invalid stack size, idle task registration,
+ *                       or stack size is not 4-byte-aligned) in one of the array elements or
+ *                       task array is full.
+ */
+gos_result_t gos_taskRegisterTasks (
+        gos_taskDescriptor_t* taskDescriptors,
+        u16_t                 arraySize
+        );
 
+/**
+ * @brief   This function registers a task for scheduling.
+ * @details Checks the task descriptor parameters and then tries to find the next empty
+ *          slot in the internal task array. When it is found, it registers the task in
+ *          that slot.
+ *
+ * @param[in] taskDescriptor Pointer to a task descriptor structure.
+ * @param[in] taskId         Pointer to a variable to hold to assigned task ID value.
+ *
+ * @return  Result of task registration.
+ *
+ * @retval  #GOS_SUCCESS Task registered successfully.
+ * @retval  #GOS_ERROR   Invalid task descriptor (NULL function pointer,
+ *                       invalid priority level, invalid stack size, idle task registration,
+ *                       or stack size is not 4-byte-aligned) or task array is full.
+ */
+gos_result_t gos_taskRegister (
+        gos_taskDescriptor_t* taskDescriptor,
+        gos_tid_t*            taskId
+        );
+
+/**
+ * @brief   Sends the current task to sleeping state.
+ * @details Checks the current task and its state, modifies it to sleeping, and
+ *          if there is a sleep hook function registered, it calls it. Then, it
+ *          invokes a rescheduling.
+ *
+ * @param[in] sleepTicks Minimum number of ticks until the task should remain in sleeping state.
+ *
+ * @return  Result of task sleeping.
+ *
+ * @retval  #GOS_SUCCESS Task successfully sent to sleeping state.
+ * @retval  #GOS_ERROR   Function called from idle task or task state is not ready.
+ */
+gos_result_t gos_taskSleep (
+        gos_taskSleepTick_t sleepTicks
+        );
+
+/**
+ * @brief   Wakes up the given task.
+ * @details Checks the current task and its state, modifies it to ready, and
+ *          if there is a wake-up hook function registered, it calls it.
+ *
+ * @param[in] taskId ID of the task to be waken up.
+ *
+ * @return  Result of task wake-up.
+ *
+ * @retval  #GOS_SUCCESS Task waken up successfully.
+ * @retval  #GOS_ERROR   Task ID is invalid, or task is not sleeping.
+ */
+gos_result_t gos_taskWakeup (
+        gos_tid_t taskId
+        );
+
+/**
+ * @brief   Sends the given task to suspended state.
+ * @details Checks the given task ID and its state, modified it to suspended, and
+ *          if there is a suspend hook function registered, it calls it. If the
+ *          suspended function is the currently running one, it invokes a rescheduling.
+ *
+ * @param[in] taskId ID of the task to be suspended.
+ *
+ * @return  Result of task suspension.
+ *
+ * @retval  #GOS_SUCCESS Task suspended successfully.
+ * @retval  #GOS_ERROR   Task ID is invalid, or task state is not ready or sleeping.
+ */
+gos_result_t gos_taskSuspend (
+        gos_tid_t taskId
+        );
+
+/**
+ * @brief   Resumes the given task.
+ * @details Checks the given task ID and its state, modified it to ready, and
+ *          if there is a resume hook function registered, it calls it.
+ *
+ * @param[in] taskId ID of the task to be resumed.
+ *
+ * @return  Result of task resumption.
+ *
+ * @retval  #GOS_SUCCESS Task resumed successfully.
+ * @retval  #GOS_ERROR   Task ID is invalid, or task is not suspended.
+ */
+gos_result_t gos_taskResume (
+        gos_tid_t taskId
+        );
+
+/**
+ * @brief   Sends the given task to blocked state.
+ * @details Checks the given task ID and its state, modified it to blocked, and
+ *          if there is a block hook function registered, it calls it. If the blocked
+ *          function is the currently running one, it invokes a rescheduling.
+ *
+ * @param[in] taskId ID of the task to be blocked.
+ * @param[in] blockTicks Maximum number of ticks for blocking the task (timeout).
+ *
+ * @return  Result of task blocking.
+ *
+ * @retval  #GOS_SUCCESS Task blocked successfully.
+ * @retval  #GOS_ERROR   Task ID is invalid, or task state is not ready.
+ */
+gos_result_t gos_taskBlock (
+        gos_tid_t          taskId,
+        gos_blockMaxTick_t blockTicks
+        );
+
+/**
+ * @brief   Unblocks the given task.
+ * @details Checks the given task ID and its state, modified it to ready, and
+ *          if there is an unblock hook function registered, it calls it.
+ *
+ * @param[in] taskId ID of the task to be unblocked.
+ *
+ * @return  Result of task unblocking.
+ *
+ * @retval  #GOS_SUCCESS Task unblocked successfully.
+ * @retval  #GOS_ERROR   Task ID is invalid, or task is not blocked.
+ */
+gos_result_t gos_taskUnblock (
+        gos_tid_t taskId
+        );
+
+/**
+ * @brief   Deletes the given task from the scheduling array.
+ * @details Checks the given task ID and its state, modifies it to zombie, and
+ *          if there is a delete hook function registered, it calls it.
+ *
+ * @param[in] taskId ID of the task to be deleted.
+ *
+ * @return  Result of deletion.
+ *
+ * @retval  #GOS_SUCCESS Task deleted successfully.
+ * @retval  #GOS_ERROR   Task is already a zombie.
+ */
+gos_result_t gos_taskDelete (
+        gos_tid_t taskId
+        );
+
+/**
+ * @brief   Sets the current priority of the given task to the given value (for temporary change).
+ * @details Checks the given parameters and sets the current priority of the given task.
+ *
+ * @param[in] taskId       ID of the task to change the priority of.
+ * @param[in] taskPriority The desired task priority.
+ *
+ * @return  Result of priority change.
+ *
+ * @retval  #GOS_SUCCESS Current priority changed successfully.
+ * @retval  #GOS_ERROR   Invalid task ID or priority.
+ */
+gos_result_t gos_taskSetPriority (
+        gos_tid_t      taskId,
+        gos_taskPrio_t taskPriority
+        );
+
+/**
+ * @brief   Sets the original priority of the given task to the given value (for permanent change).
+ * @details Checks the given parameters and sets the original priority of the given task.
+ *
+ * @param[in] taskId       ID of the task to change the priority of.
+ * @param[in] taskPriority The desired task priority.
+ *
+ * @return  Result of priority change.
+ *
+ * @retval  #GOS_SUCCESS Original priority changed successfully.
+ * @retval  #GOS_ERROR   Invalid task ID or priority.
+ */
+gos_result_t gos_taskSetOriginalPriority (
+        gos_tid_t      taskId,
+        gos_taskPrio_t taskPriority
+        );
+
+/**
+ * @brief   Gets the current priority of the given task.
+ * @details Checks the given parameters and saves the current priority in the given variable.
+ *
+ * @param[in]  taskId       ID of the task to get the priority of.
+ * @param[out] taskPriority Pointer to a priority variable to store the priority in.
+ *
+ * @return  Result of priority getting.
+ *
+ * @retval  #GOS_SUCCESS Current priority getting successfully.
+ * @retval  #GOS_ERROR   Invalid task ID or priority variable is NULL.
+ */
+gos_result_t gos_taskGetPriority (
+        gos_tid_t       taskId,
+        gos_taskPrio_t* taskPriority
+        );
+
+/**
+ * @brief   Gets the original priority of the given task.
+ * @details Checks the given parameters and saves the original priority in the given variable.
+ *
+ * @param[in]  taskId       ID of the task to get the priority of.
+ * @param[out] taskPriority Pointer to a priority variable to store the priority in.
+ *
+ * @return  Result of priority getting.
+ *
+ * @retval  #GOS_SUCCESS Original priority getting successfully.
+ * @retval  #GOS_ERROR   Invalid task ID or priority variable is NULL.
+ */
+gos_result_t gos_taskGetOriginalPriority (
+        gos_tid_t       taskId,
+        gos_taskPrio_t* taskPriority
+        );
+
+/**
+ * @brief   Adds the given privileges to the given task.
+ * @details Checks the caller task if it has the privilege to modify task privileges and
+ *          if so, it adds the given privileges to the given task.
+ *
+ * @param[in] taskId     ID of the task to give the privileges to.
+ * @param[in] privileges Privileges to be added.
+ *
+ * @return  Result of privilege adding.
+ *
+ * @retval  #GOS_SUCCESS Privileges added successfully.
+ * @retval  #GOS_ERROR   Invalid task ID or caller does not have the privilege to modify task
+ *                       privileges.
+ */
+gos_result_t gos_taskAddPrivilege (
+        gos_tid_t                taskId,
+        gos_taskPrivilegeLevel_t privileges
+        );
+
+/**
+ * @brief   Removes the given privileges from the given task.
+ * @details Checks the caller task if it has the privilege to modify task privileges and
+ *          if so, it removes the given privileges from the given task.
+ *
+ * @param[in] taskId     ID of the task to remove the privileges from.
+ * @param[in] privileges Privileges to be removed.
+ *
+ * @return  Result of privilege removing.
+ *
+ * @retval  #GOS_SUCCESS Privileges removed successfully.
+ * @retval  #GOS_ERROR   Invalid task ID or caller does not have the privilege to modify task
+ *                       privileges.
+ */
+gos_result_t gos_taskRemovePrivilege (
+        gos_tid_t                taskId,
+        gos_taskPrivilegeLevel_t privileges
+        );
+
+/**
+ * @brief   Sets the given privileges for the given task.
+ * @details Checks the caller task if it has the privilege to modify task privileges and
+ *          if so, it sets the given privileges for the given task.
+ *
+ * @param[in] taskId     ID of the task to set the privileges for.
+ * @param[in] privileges Privileges to be set.
+ *
+ * @return  Result of privilege setting.
+ *
+ * @retval  #GOS_SUCCESS Privileges set successfully.
+ * @retval  #GOS_ERROR   Invalid task ID or caller does not have the privilege to modify task
+ *                       privileges.
+ */
+gos_result_t gos_taskSetPrivileges (
+        gos_tid_t                taskId,
+        gos_taskPrivilegeLevel_t privileges
+        );
+
+/**
+ * @brief   Gets the privileges of the given task.
+ * @details Returns the privilege flags of the given task.
+ *
+ * @param[in]  taskId     ID of the task to get the privileges of.
+ * @param[out] pPrivileges Variable to store the privilege flags.
+ *
+ * @return  Result of privilege getting.
+ *
+ * @retval  #GOS_SUCCESS Privileges get successful.
+ * @retval  #GOS_ERROR   Invalid task ID or privilege variable is NULL pointer.
+ */
+gos_result_t gos_taskGetPrivileges (
+        gos_tid_t                 taskId,
+        gos_taskPrivilegeLevel_t* pPrivileges
+        );
+
+/**
+ * @brief   Gets the task name of the task with the given ID.
+ * @details Copies the task name corresponding with the given task ID to the task name variable.
+ *
+ * @param[in]  taskId   Pointer to a task ID variable to store the returned ID.
+ * @param[out] taskName Task name pointer to store the returned task name.
+ *
+ * @return  Success of task name get.
+ *
+ * @retval  #GOS_SUCCESS Task name found successfully.
+ * @retval  #GOS_ERROR   Invalid task ID or task name variable is NULL.
+ */
+gos_result_t gos_taskGetName (
+        gos_tid_t      taskId,
+        gos_taskName_t taskName
+        );
+
+/**
+ * @brief   Gets the task ID of the task with the given name.
+ * @details This function loops through the internal task array and tries to find the
+ *          given task name to get the corresponding task ID.
+ *
+ * @param[in]  taskName Name of the task (string).
+ * @param[out] pTaskId  Pointer to a task ID variable to store the returned ID.
+ *
+ * @return  Success of task ID get.
+ *
+ * @retval  #GOS_SUCCESS Task ID found successfully.
+ * @retval  #GOS_ERROR   Task name not found.
+ */
+gos_result_t gos_taskGetId (
+        gos_taskName_t taskName,
+        gos_tid_t*     pTaskId
+        );
+
+/**
+ * @brief   Returns the ID of the currently running task.
+ * @details Returns the ID of the currently running task.
+ *
+ * @param[out] pTaskId Pointer to a task ID variable to store the current task ID.
+ *
+ * @return  Result of current task ID get.
+ *
+ * @retval  #GOS_SUCCESS Current task ID returned successfully.
+ * @retval  #GOS_ERROR   Task ID pointer is NULL.
+ */
+gos_result_t gos_taskGetCurrentId (
+        gos_tid_t* pTaskId
+        );
+
+/**
+ * @brief   Returns the task data of the given task.
+ * @details Based on the task ID, it copies the content of the internal task
+ *          descriptor array element to the given task descriptor.
+ *
+ * @param[in]  taskId    ID of the task to get the data of.
+ * @param[out] pTaskData Pointer to the task descriptor to save the task data in.
+ *
+ * @return  Result of task data get.
+ *
+ * @retval  #GOS_SUCCESS Task data copied successfully.
+ * @retval  #GOS_ERROR   Invalid task ID or task data pointer is NULL.
+ */
+gos_result_t gos_taskGetData (
+        gos_tid_t             taskId,
+        gos_taskDescriptor_t* pTaskData
+        );
+
+/**
+ * @brief   Returns the task data of the given task.
+ * @details Based on the task index, it copies the content of the internal task
+ *          descriptor array element to the given task descriptor.
+ *
+ * @param[in]  taskIndex Index of the task to get the data of.
+ * @param[out] pTaskData Pointer to the task descriptor to save the task data in.
+ *
+ * @return  Result of task data get.
+ *
+ * @retval  #GOS_SUCCESS Task data copied successfully.
+ * @retval  #GOS_ERROR   Invalid task index or task data pointer is NULL.
+ */
+gos_result_t gos_taskGetDataByIndex (
+        u16_t                 taskIndex,
+        gos_taskDescriptor_t* pTaskData
+        );
+
+/**
+ * @brief   Returns the number of registered tasks.
+ * @details Loops through the internal task array and counts the
+ *          entries where a task function is registered.
+ *
+ * @param[out] pTaskNum Variable to store the number of tasks.
+ *
+ * @return  Success of task number counting.
+ *
+ * @retval  #GOS_SUCCESS Task number counted successfully.
+ * @retval  #GOS_ERROR   Target variable is NULL pointer.
+ */
+gos_result_t gos_taskGetNumber (
+        u16_t* pTaskNum
+        );
+
+/**
+ * @brief   Yields the current task.
+ * @details Invokes rescheduling.
+ *
+ * @return  Result of task yield.
+ *
+ * @retval  #GOS_SUCCESS Yield successful.
+ */
+gos_result_t gos_taskYield (
+        void_t
+        );
+/**
+ * @}
+ */
+
+/**
+ * @defgroup PlatformInitFunc Platform initializer weak functions
+ * @{
+ */
 /**
  * @brief   Platform driver initializer. Used for the platform-specific driver initializations.
  * @details This function is weak and therefore should be over-defined by the user. It prints
@@ -1219,7 +1274,7 @@ void_t gos_kernelReschedule (
  *
  * @return  -
  *
- * @retval  GOS_ERROR : -
+ * @retval  GOS_ERROR -
  */
 __attribute__((weak)) gos_result_t gos_platformDriverInit (void_t);
 
@@ -1230,7 +1285,11 @@ __attribute__((weak)) gos_result_t gos_platformDriverInit (void_t);
  *
  * @return  -
  *
- * @retval  GOS_ERROR : -
+ * @retval  GOS_ERROR -
  */
 __attribute__((weak)) gos_result_t gos_userApplicationInit (void_t);
+
+/**
+ * @}
+ */
 #endif

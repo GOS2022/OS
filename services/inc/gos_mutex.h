@@ -98,12 +98,12 @@ typedef struct
  * @brief   Initializes the mutex instance.
  * @details Sets the mutex state to unlocked.
  *
- * @param   pMutex : Pointer to the mutex to be initialized.
+ * @param[in, out] pMutex Pointer to the mutex to be initialized.
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS : Mutex initialized successfully.
- * @retval  GOS_ERROR   : Mutex pointer is NULL.
+ * @retval  #GOS_SUCCESS Mutex initialized successfully.
+ * @retval  #GOS_ERROR   Mutex pointer is NULL.
  */
 gos_result_t gos_mutexInit (
         gos_mutex_t* pMutex
@@ -115,13 +115,13 @@ gos_result_t gos_mutexInit (
  *          the timeout value is reached. If the mutex becomes unlocked
  *          within the timeout value, it locks it.
  *
- * @param   pMutex  : Pointer to the mutex to be locked.
- * @param   timeout : Timeout value.
+ * @param[in, out] pMutex  Pointer to the mutex to be locked.
+ * @param[in]      timeout Timeout value.
  *
  * @return  Result of mutex locking.
  *
- * @retval  GOS_SUCCESS : Mutex locked successfully.
- * @retval  GOS_ERROR   : Mutex could not be locked within the timeout value.
+ * @retval  #GOS_SUCCESS Mutex locked successfully.
+ * @retval  #GOS_ERROR   Mutex could not be locked within the timeout value.
  */
 gos_result_t gos_mutexLock (
         gos_mutex_t* pMutex,
@@ -132,12 +132,12 @@ gos_result_t gos_mutexLock (
  * @brief   Unlocks the mutex instance.
  * @details Sets the mutex state to unlocked.
  *
- * @param   pMutex : Pointer to the mutex to be unlocked.
+ * @param[in, out] pMutex Pointer to the mutex to be unlocked.
  *
  * @return  Result of mutex unlocking.
  *
- * @retval  GOS_SUCCESS : Unlocking successful.
- * @retval  GOS_ERROR   : Mutex is NULL or caller is not the owner of the mutex.
+ * @retval  #GOS_SUCCESS Unlocking successful.
+ * @retval  #GOS_ERROR   Mutex is NULL or caller is not the owner of the mutex.
  */
 gos_result_t gos_mutexUnlock (
         gos_mutex_t* pMutex

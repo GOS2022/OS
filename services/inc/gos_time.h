@@ -137,8 +137,8 @@ typedef enum
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS : Initialization successful.
- * @retval  GOS_ERROR   : Time signal registration error or time daemon registration error.
+ * @retval  #GOS_SUCCESS Initialization successful.
+ * @retval  #GOS_ERROR   Time signal registration error or time daemon registration error.
  */
 gos_result_t gos_timeInit (
         void_t
@@ -148,12 +148,12 @@ gos_result_t gos_timeInit (
  * @brief   This function gets the system time.
  * @details This function copies the system time value to the given time variable.
  *
- * @param   pTime       : Pointer to a time variable to store the system time value in.
+ * @param[out] pTime Pointer to a time variable to store the system time value in.
  *
  * @return  Result of time getting.
  *
- * @retval  GOS_SUCCESS : Time getting successful.
- * @retval  GOS_ERROR   : Time variable is NULL pointer.
+ * @retval  #GOS_SUCCESS Time getting successful.
+ * @retval  #GOS_ERROR   Time variable is NULL pointer.
  */
 gos_result_t gos_timeGet (
         gos_time_t* pTime
@@ -164,12 +164,12 @@ gos_result_t gos_timeGet (
  * @details This function copies the time value from the given time variable to the
  *          system time variable.
  *
- * @param   pTime       : Pointer to a time variable holding the desired time value.
+ * @param[in] pTime Pointer to a time variable holding the desired time value.
  *
  * @return  Result of time setting.
  *
- * @retval  GOS_SUCCESS : Time setting successful.
- * @retval  GOS_ERROR   : Time structure is NULL pointer.
+ * @retval  #GOS_SUCCESS Time setting successful.
+ * @retval  #GOS_ERROR   Time structure is NULL pointer.
  */
 gos_result_t gos_timeSet (
         gos_time_t* pTime
@@ -179,14 +179,14 @@ gos_result_t gos_timeSet (
  * @brief   This function compares two time structures.
  * @details This function compares two time structures.
  *
- * @param   pTime1      : Pointer to the first time variable.
- * @param   pTime2      : Pointer to the second time variable.
- * @param   result      : Pointer to the comparison result variable.
+ * @param[in]  pTime1 Pointer to the first time variable.
+ * @param[in]  pTime2 Pointer to the second time variable.
+ * @param[out] result Pointer to the comparison result variable.
  *
  * @return  Result of time comparison.
  *
- * @retval  GOS_SUCCESS : Time comparison successful.
- * @retval  GOS_ERROR   : Either time structure and/or result variable is NULL pointer.
+ * @retval  #GOS_SUCCESS Time comparison successful.
+ * @retval  #GOS_ERROR   Either time structure and/or result variable is NULL pointer.
  */
 gos_result_t gos_timeCompare (
         gos_time_t*               pTime1,
@@ -198,12 +198,12 @@ gos_result_t gos_timeCompare (
  * @brief   This function increases the system time and runtime with the given value of milliseconds.
  * @details This function increases the system time and runtime with the given value of milliseconds.
  *
- * @param   milliseconds : Number of milliseconds to add to system time.
+ * @param[in] milliseconds Number of milliseconds to add to system time.
  *
  * @return  Result of system time increasing.
  *
- * @retval  GOS_SUCCESS : Increasing successful.
- * @retval  GOS_ERROR   : System time or runtime increasing failed.
+ * @retval  #GOS_SUCCESS Increasing successful.
+ * @retval  #GOS_ERROR   System time or runtime increasing failed.
  */
 gos_result_t gos_timeIncreaseSystemTime (
         u16_t milliseconds
@@ -213,13 +213,13 @@ gos_result_t gos_timeIncreaseSystemTime (
  * @brief   This function adds the given number of milliseconds to the given time structure.
  * @details This function adds the given number of milliseconds to the given time structure.
  *
- * @param   pTime        : Pointer to the time structure.
- * @param   milliseconds : Number of milliseconds to add.
+ * @param[in, out] pTime        Pointer to the time structure.
+ * @param[in]      milliseconds Number of milliseconds to add.
  *
  * @return  Result of time increasing.
  *
- * @retval  GOS_SUCCESS : Increasing successful.
- * @retval  GOS_ERROR   : Time structure is NULL pointer.
+ * @retval  #GOS_SUCCESS Increasing successful.
+ * @retval  #GOS_ERROR   Time structure is NULL pointer.
  */
 gos_result_t gos_timeAddMilliseconds (
         gos_time_t* pTime,
@@ -230,13 +230,13 @@ gos_result_t gos_timeAddMilliseconds (
  * @brief   This function adds the given number of seconds to the given time variable.
  * @details This function adds the given number of seconds to the given time variable.
  *
- * @param   pTime       : Pointer to the time variable.
- * @param   seconds     : Number of seconds to add.
+ * @param[in, out] pTime   Pointer to the time variable.
+ * @param[in]      seconds Number of seconds to add.
  *
  * @return  Result of time increasing.
  *
- * @retval  GOS_SUCCESS : Seconds added successfully.
- * @retval  GOS_ERROR   : Time variable is NULL pointer.
+ * @retval  #GOS_SUCCESS Seconds added successfully.
+ * @retval  #GOS_ERROR   Time variable is NULL pointer.
  */
 gos_result_t gos_timeAddSeconds (
         gos_time_t* pTime,
@@ -247,14 +247,14 @@ gos_result_t gos_timeAddSeconds (
  * @brief   This function adds the given number of microseconds to the given time variables.
  * @details This function adds the given number of microseconds to the given time variables.
  *
- * @param   pRunTime1    : Pointer to the time variable.
- * @param   pRunTime2    : Pointer to the time variable.
- * @param   microseconds : Number of microseconds to add.
+ * @param[in, out] pRunTime1    Pointer to the time variable.
+ * @param[in, out] pRunTime2    Pointer to the time variable.
+ * @param[in]      microseconds Number of microseconds to add.
  *
  * @return  Result of time increasing.
  *
- * @retval  GOS_SUCCESS : Microseconds added successfully.
- * @retval  GOS_ERROR   : Time variable is NULL pointer.
+ * @retval  #GOS_SUCCESS Microseconds added successfully.
+ * @retval  #GOS_ERROR   Time variable is NULL pointer.
  */
 gos_result_t gos_runTimeAddMicroseconds (
         gos_runtime_t* pRunTime1,
@@ -266,14 +266,13 @@ gos_result_t gos_runTimeAddMicroseconds (
  * @brief   This function adds the given number of milliseconds to the given time variables.
  * @details This function adds the given number of milliseconds to the given time variables.
  *
- * @param   pRunTime1    : Pointer to the time variable.
- * @param   pRunTime2    : Pointer to the time variable.
- * @param   milliseconds : Number of milliseconds to add.
+ * @param[in, out] pRunTime     Pointer to the time variable.
+ * @param[in]      milliseconds Number of milliseconds to add.
  *
  * @return  Result of time increasing.
  *
- * @retval  GOS_SUCCESS : Milliseconds added successfully.
- * @retval  GOS_ERROR   : Time variable is NULL pointer.
+ * @retval  #GOS_SUCCESS Milliseconds added successfully.
+ * @retval  #GOS_ERROR   Time variable is NULL pointer.
  */
 gos_result_t gos_runTimeAddMilliseconds (
         gos_runtime_t* pRunTime,
@@ -284,13 +283,13 @@ gos_result_t gos_runTimeAddMilliseconds (
  * @brief   This function adds the given number of seconds to the given run-time variable.
  * @details This function adds the given number of seconds to the given run-time variable.
  *
- * @param   pRunTime    : Pointer to a run-time variable.
- * @param   seconds     : Number of seconds to add.
+ * @param[in, out] pRunTime Pointer to a run-time variable.
+ * @param[in]      seconds  Number of seconds to add.
  *
  * @return  Result of time increasing.
  *
- * @retval  GOS_SUCCESS : Seconds added successfully.
- * @retval  GOS_ERROR   : Run-time variable is NULL pointer.
+ * @retval  #GOS_SUCCESS Seconds added successfully.
+ * @retval  #GOS_ERROR   Run-time variable is NULL pointer.
  */
 gos_result_t gos_runTimeAddSeconds (
         gos_runtime_t* pRunTime,
@@ -301,12 +300,12 @@ gos_result_t gos_runTimeAddSeconds (
  * @brief   This function gets the system run-time.
  * @details This function gets the system run-time.
  *
- * @param   pRunTime    : Pointer to a run-time variable to store the system run-time in.
+ * @param[out] pRunTime Pointer to a run-time variable to store the system run-time in.
  *
  * @return  Result of run-time getting.
  *
- * @retval  GOS_SUCCESS : Run-time getting is successful.
- * @retval  GOS_ERROR   : Run-time variable is NULL pointer.
+ * @retval  #GOS_SUCCESS Run-time getting is successful.
+ * @retval  #GOS_ERROR   Run-time variable is NULL pointer.
  */
 gos_result_t gos_runTimeGet (
         gos_runtime_t* pRunTime

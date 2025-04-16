@@ -69,12 +69,12 @@ typedef gos_result_t (*gos_timerDriverSysTimerGetVal_t)(u16_t*);
  * @brief   System timer value getter skeleton.
  * @details If registered, it calls the custom system timer getter function.
  *
- * @param   pValue      : Pointer to the variable to store the timer value in.
+ * @param[out] pValue Pointer to the variable to store the timer value in.
  *
  * @return  Result of system timer value getting.
  *
- * @retval  GOS_SUCCESS : According to user implementation.
- * @retval  GOS_ERROR   : According to user implementation / function not registered.
+ * @retval  #GOS_SUCCESS According to user implementation.
+ * @retval  #GOS_ERROR   According to user implementation / function not registered.
  */
 gos_result_t gos_timerDriverSysTimerGet (u16_t* pValue);
 #endif

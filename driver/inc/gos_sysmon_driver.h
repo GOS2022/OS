@@ -72,13 +72,13 @@ typedef gos_result_t (*gos_sysmonDriverReceive_t)(u8_t*, u16_t);
  * @brief   It receives to the given buffer.
  * @details If registered, it calls the receiver function.
  *
- * @param   pBuffer     : Target buffer to receive to.
- * @param   bufferSize  : Size of the target buffer.
+ * @param[out] pBuffer    Target buffer to receive to.
+ * @param[in]  bufferSize Size of the target buffer.
  *
  * @return  Result of reception.
  *
- * @retval  GOS_SUCCESS : According to user implementation.
- * @retval  GOS_ERROR   : According to user implementation / function not registered.
+ * @retval  #GOS_SUCCESS According to user implementation.
+ * @retval  #GOS_ERROR   According to user implementation / function not registered.
  */
 gos_result_t gos_sysmonDriverReceive (
         u8_t* pBuffer,
@@ -89,13 +89,13 @@ gos_result_t gos_sysmonDriverReceive (
  * @brief   It transmits the given buffer.
  * @details If registered, it calls the transmitter function.
  *
- * @param   pBuffer     : Buffer to transmit.
- * @param   bufferSize  : Size of the buffer.
+ * @param[in] pBuffer    Buffer to transmit.
+ * @param[in] bufferSize Size of the buffer.
  *
  * @return  Result of string transmission.
  *
- * @retval  GOS_SUCCESS : According to user implementation.
- * @retval  GOS_ERROR   : According to user implementation / function not registered.
+ * @retval  #GOS_SUCCESS According to user implementation.
+ * @retval  #GOS_ERROR   According to user implementation / function not registered.
  */
 gos_result_t gos_sysmonDriverTransmit (
         u8_t* pBuffer,

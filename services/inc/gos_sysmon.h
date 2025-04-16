@@ -85,8 +85,8 @@ typedef struct
  *
  * @return  Result of initialization.
  *
- * @retval  GOS_SUCCESS : Sysmon initialization successful.
- * @retval  GOS_ERROR   : Sysmon daemon task registration failed.
+ * @retval  #GOS_SUCCESS Sysmon initialization successful.
+ * @retval  #GOS_ERROR   Sysmon daemon task registration failed.
  */
 gos_result_t gos_sysmonInit (void_t);
 
@@ -100,11 +100,13 @@ gos_result_t gos_sysmonInit (void_t);
  *
  *          Recommended ID range: 0x6000 ... 0x9999.
  *
+ * @param[in] pDesc Pointer to a sysmon user message descriptor.
+ *
  * @return  Result of registration.
  *
- * @retval  GOS_SUCCESS : User message registered successfully.
- * @retval  GOS_ERROR   : Descriptor or callback is NULL or maximum number of user
- *                        messages has been reached.
+ * @retval  #GOS_SUCCESS User message registered successfully.
+ * @retval  #GOS_ERROR   Descriptor or callback is NULL or maximum number of user
+ *                       messages has been reached.
  */
 gos_result_t gos_sysmonRegisterUserMessage (gos_sysmonUserMessageDescriptor_t* pDesc);
 

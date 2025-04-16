@@ -107,12 +107,12 @@ gos_result_t gos_signalInit (
  * @details Finds the next free slot in the signal array and
  *          registers the new signal there.
  *
- * @param   pSignal     : Pointer to a signal identifier.
+ * @param[out] pSignal Pointer to a signal identifier.
  *
  * @return  Success of signal creation.
  *
- * @retval  GOS_SUCCESS : Creation successful.
- * @retval  GOS_ERROR   : Signal array full.
+ * @retval  #GOS_SUCCESS Creation successful.
+ * @retval  #GOS_ERROR   Signal array full.
  */
 gos_result_t gos_signalCreate (
         gos_signalId_t* pSignal
@@ -123,15 +123,15 @@ gos_result_t gos_signalCreate (
  * @details Finds the next free slot in the signal handler array and registers the
  *          signal handler there.
  *
- * @param   signalId                : Signal identifier.
- * @param   signalHandler           : Signal handler function pointer.
- * @param   signalHandlerPrivileges : Signal handler privilege level.
+ * @param[in] signalId                Signal identifier.
+ * @param[in] signalHandler           Signal handler function pointer.
+ * @param[in] signalHandlerPrivileges Signal handler privilege level.
  *
  * @return  Success of signal subscription.
  *
- * @retval  GOS_SUCCESS   : Subscription successful.
- * @retval  GOS_ERROR     : Invalid signal ID, signal handler NULL pointer, or
- *                          handler array full.
+ * @retval  #GOS_SUCCESS Subscription successful.
+ * @retval  #GOS_ERROR   Invalid signal ID, signal handler NULL pointer, or
+ *                       handler array full.
  */
 gos_result_t gos_signalSubscribe (
         gos_signalId_t           signalId,
@@ -144,13 +144,13 @@ gos_result_t gos_signalSubscribe (
  * @details Places the given signal in the invoke queue (for the signal daemon to
  *          actually invoke the signal in the background).
  *
- * @param   signalId    : Signal identifier.
- * @param   senderId    : Sender identifier (or data to pass).
+ * @param[in] signalId Signal identifier.
+ * @param[in] senderId Sender identifier (or data to pass).
  *
  * @return  Success of signal invoking.
  *
- * @retval  GOS_SUCCESS : Invoking successful.
- * @retval  GOS_ERROR   : Invalid signal ID or signal unused.
+ * @retval  #GOS_SUCCESS Invoking successful.
+ * @retval  #GOS_ERROR   Invalid signal ID or signal unused.
  */
 gos_result_t gos_signalInvoke (
         gos_signalId_t       signalId,
