@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos.c
 //! @author     Ahmed Gazar
-//! @date       2025-04-06
-//! @version    1.10
+//! @date       2025-06-18
+//! @version    1.11
 //!
 //! @brief      GOS source.
 //! @details    For a more detailed description of this service, please refer to @ref gos.h
@@ -42,6 +42,9 @@
 // 1.9        2023-07-12    Ahmed Gazar     +    gos_sysmonInit added to initializers
 // 1.10       2025-04-06    Ahmed Gazar     *    GOS_CONCAT_RESULT usage added
 //                                          *    Sleep removed from system task dump handling
+// 1.11       2025-06-18    Ahmed Gazar     -    Sysmon removed
+//                                          -    gos_platformDriverInit removed
+//                                          -    gos_userApplicationInit removed
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -123,9 +126,8 @@ GOS_STATIC gos_initStruct_t initializers [] =
     {"Shell service initialization"   , gos_shellInit},
 #endif
     {"Message service initialization" , gos_messageInit},
+#if CFG_GCP_CHANNELS_MAX_NUMBER > 0
     {"GCP service initialization"     , gos_gcpInit},
-#if CFG_SYSMON_USE_SERVICE == 1
-    {"Sysmon service initialization"  , gos_sysmonInit},
 #endif
     {"User application initialization", gos_userApplicationInit}
 };
@@ -234,30 +236,6 @@ void_t gos_Dump (void_t)
     (void_t) gos_shellSuspend();
 }
 
-/*
- * Function: gos_platformDriverInit
- */
-__attribute__((weak)) gos_result_t gos_platformDriverInit (void_t)
-{
-    /*
-     * Function code.
-     */
-    (void_t) gos_errorHandler(GOS_ERROR_LEVEL_OS_WARNING, __func__, __LINE__, "Platform driver initializer missing!");
-    return GOS_ERROR;
-}
-
-/*
- * Function: gos_userApplicationInit
- */
-__attribute__((weak)) gos_result_t gos_userApplicationInit (void_t)
-{
-    /*
-     * Function code.
-     */
-    (void_t) gos_errorHandler(GOS_ERROR_LEVEL_OS_WARNING, __func__, __LINE__, "User application initializer missing!");
-    return GOS_ERROR;
-}
-
 /**
  * @brief   Starts the OS.
  * @details Checks whether the initializer function has set the error flag to GOS_FALSE,
@@ -315,7 +293,7 @@ GOS_STATIC void_t gos_systemTask (void_t)
     // Loop through the initializers and call them while tracing the results.
     for (initIndex = 0u; initIndex < sizeof(initializers) / sizeof(gos_initStruct_t); initIndex++)
     {
-    	GOS_CONCAT_RESULT(sysInitResult, gos_errorTraceInit(initializers[initIndex].initDesc, initializers[initIndex].initFunc()));
+        GOS_CONCAT_RESULT(sysInitResult, gos_errorTraceInit(initializers[initIndex].initDesc, initializers[initIndex].initFunc()));
     }
 
     // Trace overall result.

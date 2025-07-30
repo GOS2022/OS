@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_kernel.h
 //! @author     Ahmed Gazar
-//! @date       2025-03-22
-//! @version    1.22
+//! @date       2025-07-04
+//! @version    1.23
 //!
 //! @brief      GOS kernel header.
 //! @details    The GOS kernel is the core of the GOS system. It contains the basic type
@@ -81,10 +81,12 @@
 //                                          *    GOS_ATOMIC_ENTER and GOS_ATOMIC_EXIT modified
 //                                          *    gos_kernel_privilege_t moved here
 //                                          -    taskIdEx removed from task descriptor structure
-// 1.20       2024-02-27    Ahmed Gazar     +    GOS_CONCAT_RESULT added
+// 1.20       2024-02-27    Ahmed Gazar     +    GOS_CONCAT_RESULT() added
 // 1.21       2024-06-13    Ahmed Gazar     +    gos_taskGetNumber added
 // 1.22       2025-03-22    Ahmed Gazar     +    gos_preResetHook_t added
 //                                          +    gos_kernelRegisterPreResetHook() added
+// 1.23       2025-07-04    Ahmed Gazar     +    GOS_UNUSED_PAR() added
+//                                          +    GOS_CONVERT_RESULT() added
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -216,6 +218,11 @@
  * ASM.
  */
 #define GOS_ASM                        __asm volatile
+
+/**
+ * Unused.
+ */
+#define GOS_UNUSED_PAR(x)             (void_t) x
 
 /**
  * @}
@@ -351,6 +358,19 @@
                                                              {                                 \
                                                                  finalResult = GOS_ERROR;      \
                                                              }                                 \
+                                                         }
+/**
+ * Result converting macro.
+ */
+#define GOS_CONVERT_RESULT(result)                       {                                     \
+                                                              if (result != GOS_SUCCESS)       \
+                                                              {                                \
+                                                                  result = GOS_ERROR;          \
+                                                              }                                \
+                                                              else                             \
+                                                              {                                \
+                                                                  /* Nothing to do. */         \
+                                                              }                                \
                                                          }
 
 /*
@@ -641,7 +661,7 @@ gos_result_t gos_kernelRegisterPrivilegedHook (
  * @retval  #GOS_ERROR   Registration failed (hook function already exists or parameter is NULL).
  */
 gos_result_t gos_kernelRegisterPreResetHook (
-		gos_preResetHook_t preResetHookFunction
+        gos_preResetHook_t preResetHookFunction
         );
 
 /**
@@ -1259,36 +1279,6 @@ gos_result_t gos_taskGetNumber (
 gos_result_t gos_taskYield (
         void_t
         );
-/**
- * @}
- */
-
-/**
- * @defgroup PlatformInitFunc Platform initializer weak functions
- * @{
- */
-/**
- * @brief   Platform driver initializer. Used for the platform-specific driver initializations.
- * @details This function is weak and therefore should be over-defined by the user. It prints
- *          a warning message to the log output in case it is not over-defined.
- *
- * @return  -
- *
- * @retval  GOS_ERROR -
- */
-__attribute__((weak)) gos_result_t gos_platformDriverInit (void_t);
-
-/**
- * @brief   User application initializer. Used for the application-related initializations.
- * @details This function is weak and therefore should be over-defined by the user. It prints
- *          a warning message to the log output in case it is not over-defined.
- *
- * @return  -
- *
- * @retval  GOS_ERROR -
- */
-__attribute__((weak)) gos_result_t gos_userApplicationInit (void_t);
-
 /**
  * @}
  */

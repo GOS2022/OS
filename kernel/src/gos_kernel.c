@@ -479,7 +479,7 @@ gos_result_t gos_kernelRegisterPreResetHook (gos_preResetHook_t preResetHookFunc
      */
     if (preResetHookFunction != NULL && kernelPreResetHookFunction == NULL)
     {
-    	kernelPreResetHookFunction = preResetHookFunction;
+        kernelPreResetHookFunction = preResetHookFunction;
         hookRegisterResult = GOS_SUCCESS;
     }
     else
@@ -589,14 +589,14 @@ void_t gos_kernelReset (void_t)
     /*
      * Function code.
      */
-	if (kernelPreResetHookFunction != NULL)
-	{
-		kernelPreResetHookFunction();
-	}
-	else
-	{
-		// No hook function registered.
-	}
+    if (kernelPreResetHookFunction != NULL)
+    {
+        kernelPreResetHookFunction();
+    }
+    else
+    {
+        // No hook function registered.
+    }
     resetRequired = GOS_TRUE;
     gos_kernelReschedule(GOS_UNPRIVILEGED);
 }

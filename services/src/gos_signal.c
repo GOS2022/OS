@@ -262,8 +262,8 @@ GOS_INLINE gos_result_t gos_signalInvoke (gos_signalId_t signalId, gos_signalSen
     /*
      * Local variables.
      */
-    gos_result_t         signalInvokeResult = GOS_ERROR;
-    gos_tid_t            callerTaskId       = GOS_INVALID_TASK_ID;
+    gos_result_t signalInvokeResult = GOS_ERROR;
+    gos_tid_t    callerTaskId       = GOS_INVALID_TASK_ID;
 
     /*
      * Function code.

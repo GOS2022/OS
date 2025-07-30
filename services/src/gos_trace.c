@@ -201,7 +201,7 @@ GOS_INLINE gos_result_t gos_traceTrace (bool_t addTimeStamp, char_t* traceMessag
 
         if (addTimeStamp == GOS_TRUE)
         {
-        	GOS_CONCAT_RESULT(traceResult, gos_timeGet(&sysTime));
+            GOS_CONCAT_RESULT(traceResult, gos_timeGet(&sysTime));
             (void_t) sprintf(timeStampBuffer, GOS_TRACE_TIMESTAMP_FORMAT,
                     sysTime.years,
                     sysTime.months,
@@ -288,7 +288,7 @@ gos_result_t gos_traceTraceFormatted (bool_t addTimeStamp, GOS_CONST char_t* tra
     {
         if (addTimeStamp == GOS_TRUE)
         {
-        	GOS_CONCAT_RESULT(traceResult, gos_timeGet(&sysTime));
+            GOS_CONCAT_RESULT(traceResult, gos_timeGet(&sysTime));
             (void_t) sprintf(timeStampBuffer, GOS_TRACE_TIMESTAMP_FORMAT,
                     sysTime.years,
                     sysTime.months,

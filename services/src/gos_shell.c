@@ -14,8 +14,8 @@
 //*************************************************************************************************
 //! @file       gos_shell.c
 //! @author     Ahmed Gazar
-//! @date       2024-06-28
-//! @version    1.9
+//! @date       2025-07-29
+//! @version    1.10
 //!
 //! @brief      GOS shell service source.
 //! @details    For a more detailed description of this service, please refer to @ref gos_shell.h
@@ -38,6 +38,7 @@
 // 1.8        2023-09-08    Ahmed Gazar     +    Shell help: list of shell commands added
 //                                          +    Shell CPU and runtime commands added
 // 1.9        2024-06-28    Ahmed Gazar     +    Task unblock commands added
+// 1.10       2025-07-29    Ahmed Gazar     +    CFG_SHELL_STARTUP_DELAY_MS added
 //*************************************************************************************************
 //
 // Copyright (c) 2022 Ahmed Gazar
@@ -517,11 +518,11 @@ GOS_STATIC void_t gos_shellCommandHandler (char_t* params)
                         "- delete_tid\r\n\t\t"
                         "- suspend_tid\r\n\t\t"
                         "- resume_tid\r\n\t\t"
-                		"- unblock_tid\r\n\t\t"
+                        "- unblock_tid\r\n\t\t"
                         "- delete\r\n\t\t"
                         "- suspend\r\n\t\t"
                         "- resume\r\n\t\t"
-                		"- unblock\r\n\t\t"
+                        "- unblock\r\n\t\t"
                         "- runtime\r\n\t\t"
                         "- cpu\r\n");
             }

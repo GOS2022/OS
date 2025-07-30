@@ -42,6 +42,7 @@
 // 1.8        2023-09-25    Ahmed Gazar     *    Application specific configuration inclusion added
 // 1.9        2024-02-13    Ahmed Gazar     +    CFG_SYSMON_MAX_USER_MESSAGES added
 // 1.10       2024-04-24    Ahmed Gazar     -    Process service related definitions removed
+// 1.11       2025-07-29    Ahmed Gazar     -    Sysmon service related definitions removed
 //*************************************************************************************************
 #ifndef GOS_CONFIG_H
 #define GOS_CONFIG_H
@@ -136,10 +137,6 @@
  * Log daemon task stack size.
  */
 #define CFG_TASK_TRACE_DAEMON_STACK     ( 0x400 )
-/**
- * Sysmon daemon task stack size.
- */
-#define CFG_TASK_SYSMON_DAEMON_STACK    ( 0x800 )
 
 /*
  * OS task priorities.
@@ -168,10 +165,6 @@
  * System task priority.
  */
 #define CFG_TASK_SYS_PRIO               ( 195 )
-/**
- * Sysmon daemon task priority.
- */
-#define CFG_TASK_SYSMON_DAEMON_PRIO     ( 191 )
 
 /*
  * Queue service parameters.
@@ -277,24 +270,6 @@
  * Trace maximum (line) length.
  */
 #define CFG_TRACE_MAX_LENGTH            ( 200 )
-
-/*
- * Sysmon service parameters.
- */
-/**
- * Sysmon use service flag.
- */
-#define CFG_SYSMON_USE_SERVICE          ( 1 )
-
-/**
- * Define sysmon GCP channel number.
- */
-#define CFG_SYSMON_GCP_CHANNEL_NUM      ( 0 )
-
-/**
- * Maximum number of user messages.
- */
-#define CFG_SYSMON_MAX_USER_MESSAGES    ( 24 )
 
 /*
  * Error handling parameters.

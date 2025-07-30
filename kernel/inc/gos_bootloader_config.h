@@ -91,7 +91,7 @@
 /**
  * System task stack size.
  */
-#define CFG_SYSTEM_TASK_STACK_SIZE      ( 0x800 )
+#define CFG_SYSTEM_TASK_STACK_SIZE      ( 0x1000 )
 /**
  * Signal daemon task stack size.
  */
@@ -112,10 +112,6 @@
  * Log daemon task stack size.
  */
 #define CFG_TASK_TRACE_DAEMON_STACK     ( 0x400 )
-/**
- * Sysmon daemon task stack size.
- */
-#define CFG_TASK_SYSMON_DAEMON_STACK    ( 0x800 )
 
 /*
  * OS task priorities.
@@ -144,10 +140,6 @@
  * System task priority.
  */
 #define CFG_TASK_SYS_PRIO               ( 195 )
-/**
- * Sysmon daemon task priority.
- */
-#define CFG_TASK_SYSMON_DAEMON_PRIO     ( 191 )
 
 /*
  * Queue service parameters.
@@ -240,7 +232,7 @@
 /**
  * GCP maximum number of channels.
  */
-#define CFG_GCP_CHANNELS_MAX_NUMBER     ( 1 )
+#define CFG_GCP_CHANNELS_MAX_NUMBER     ( 2 )
 
 /*
  * Trace service parameters.
@@ -249,24 +241,6 @@
  * Trace maximum (line) length.
  */
 #define CFG_TRACE_MAX_LENGTH            ( 200 )
-
-/*
- * Sysmon service parameters.
- */
-/**
- * Sysmon use service flag.
- */
-#define CFG_SYSMON_USE_SERVICE          ( 1 )
-
-/**
- * Define sysmon GCP channel number.
- */
-#define CFG_SYSMON_GCP_CHANNEL_NUM      ( 0 )
-
-/**
- * Maximum number of user messages.
- */
-#define CFG_SYSMON_MAX_USER_MESSAGES    ( 24 )
 
 /*
  * Error handling parameters.

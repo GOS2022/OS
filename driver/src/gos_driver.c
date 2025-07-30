@@ -55,7 +55,7 @@
 /*
  * Global variables
  */
-gos_driver_functions_t driverFunctions = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+gos_driver_functions_t driverFunctions = { NULL, NULL, NULL, NULL, NULL };
 
 /*
  * Function: gos_driverInit

@@ -129,7 +129,7 @@ gos_result_t gos_gcpTransmitMessage (
         u16_t                   messageId,
         void_t*                 pMessagePayload,
         u16_t                   payloadSize,
-		u16_t                   maxChunkSize
+        u16_t                   maxChunkSize
         );
 
 /**
@@ -152,6 +152,6 @@ gos_result_t gos_gcpReceiveMessage (
         u16_t*                  pMessageId,
         void_t*                 pPayloadTarget,
         u16_t                   targetSize,
-		u16_t                   maxChunkSize
+        u16_t                   maxChunkSize
         );
 #endif
